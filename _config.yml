@@ -4,6 +4,6 @@ description: Future home of all things Azure Archetype
 show_downloads: false
 google_analytics:
 theme: jekyll-theme-minimal
-header_Pages:
+header_pages:
   - _posts
   
