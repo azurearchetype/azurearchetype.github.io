@@ -23,18 +23,6 @@
 
         <p>{{ site.description | default: site.github.project_tagline }}</p>
 
-        {% if site.github.is_project_page %}
-        <p class="view"><a href="{{ site.github.repository_url }}">View the Project on GitHub <small>{{ site.github.repository_nwo }}</small></a></p>
-        {% endif %}
-
-        {% if site.github.is_user_page %}
-        <p class="view"><a href="{{ site.github.owner_url }}">
-          <img src="/assets/img/github-mark-white.png" alt="GitHub Icon" style="width:32px;height:32px;">
-          View My GitHub Profile
-          </a>
-        </p>
-        {% endif %}
-
         <p> </p>
         <a href="https://www.linkedin.com/in/azurearchetype" target="_blank">
           <img src="/assets/img/LI-In-Bug.png" alt="LinkedIn" style="width:32px;height:32px;">
@@ -42,7 +30,11 @@
 
         <a href="https://www.youtube.com/@AzureArchetype" target="_blank">
           <img src="/assets/img/yt_logo_rgb_dark.png" alt="YouTube" style="width:128px;height:32px;">
-        </a>
+        </a>&nbsp;
+
+        <a href="https://github.com/azurearchetype" target="_blank">
+          <img src="github-mark-white.png" alt="GitHub" style="width:32px;height:32px;">
+        </a>&nbsp;
 
         {% if site.show_downloads %}
         <ul class="downloads">
