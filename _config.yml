@@ -1,12 +1,15 @@
-title: Azure Archetype
+title: azureArchetype
 logo: /assets/img/azure-icon.png
-description: Future home of all things Azure Archetype
+description: Home of all things Azure and AI
 show_downloads: false
-google_analytics:
-theme: jekyll-theme-minimal
-# header_pages:
-#  - _posts
-#
 google_analytics: G-WRVZK0VFP4
+theme: jekyll-theme-minimal
 
- 
+# Plugins
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
