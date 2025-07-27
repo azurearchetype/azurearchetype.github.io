@@ -163,6 +163,22 @@
       .left-sidebar p {
         color: #ccc;
       }
+      
+      /* Useful Links styling */
+      .useful-links p,
+      .useful-links strong,
+      .useful-links em,
+      .useful-links span {
+        color: #fff !important;
+      }
+      
+      .useful-links a {
+        color: #4a9eff !important;
+      }
+      
+      .useful-links a:hover {
+        color: #6bb6ff !important;
+      }
     </style>
   </head>
   <body>
@@ -235,6 +251,20 @@
         {% endif %}
         
         {{ content }}
+        
+        <!-- Useful Links Section -->
+        <section class="useful-links" style="margin-top: 40px;">
+          <h2 style="color: #fff; border-bottom: 2px solid #4a9eff; padding-bottom: 10px; margin-bottom: 20px;">Useful Links</h2>
+          
+          {% for link in site.links %}
+            <div class="link-section" style="margin-bottom: 25px; padding: 15px; background: #1a1a1a; border-radius: 5px; border: 1px solid #333;">
+              <h3 style="color: #6bb6ff; margin-bottom: 10px;">{{ link.title }}</h3>
+              <div style="font-size: 14px; line-height: 1.6; color: #fff;">
+                {{ link.content | markdownify }}
+              </div>
+            </div>
+          {% endfor %}
+        </section>
       </main>
       
       <!-- Right Sidebar -->

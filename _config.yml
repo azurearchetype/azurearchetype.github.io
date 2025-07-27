@@ -5,6 +5,11 @@ show_downloads: false
 google_analytics: G-WRVZK0VFP4
 theme: jekyll-theme-minimal
 
+# Collections
+collections:
+  links:
+    output: false
+
 # Plugins
 plugins:
   - jekyll-feed
