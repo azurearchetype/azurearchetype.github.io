@@ -9,7 +9,7 @@ author: Matthew
 
 I left my first post up from September of 2024 as a time stamp as to where this all began.  At the time AI was still all about chat bots and how to write a good prompt.  Today, Agentic AI is a thing.  AI is moving from being a disruptive technology to becoming democratized and it is having a real impact on how things are being done in the world.
 
-This site stated as a conversation with a chat bot and deploying a ‘simple’ blog site on GitHub.  Since I am all about leveraging code and AI, using a GitHub repo, VSCode, and markdown language to create a site seemed to make sense.
+This site started as a conversation with a chat bot and deploying a ‘simple’ blog site on GitHub.  Since I am all about leveraging code and AI, using a GitHub repo, VSCode, and markdown language to create a site seemed to make sense. It also was in alignment with my goals for this blog.
 
 Now, almost a year later, I leveraged GitHub Copilot in 'agent mode' and its agentic AI features to completely revise the site.  Overall, it was an awesome experience.  Assigning tasks to be completed autonomously is mind-blowing. Agentic AI is much better now than when I was first introduced at MS Build a short time ago.
 
