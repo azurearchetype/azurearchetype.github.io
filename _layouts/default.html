@@ -86,6 +86,51 @@
         line-height: 1.6 !important;
       }
       
+      /* Back link styling */
+      .back-link {
+        text-align: right !important;
+        margin: 0 0 20px 0 !important;
+        padding: 0 !important;
+      }
+      
+      .back-link a {
+        color: #4a9eff !important;
+        text-decoration: none !important;
+        font-size: 14px !important;
+        font-weight: normal !important;
+      }
+      
+      .back-link a:hover {
+        color: #6bb6ff !important;
+        text-decoration: underline !important;
+      }
+      
+      .back-link-bottom {
+        text-align: right !important;
+        margin: 20px 0 0 0 !important;
+        padding: 10px 0 0 0 !important;
+        border-top: 1px solid #333 !important;
+      }
+      
+      /* Hide original theme back link */
+      a[href="../"]:contains("back"),
+      a[href="/"]:contains("back"),
+      .back:not(.back-link),
+      section a[href="../"],
+      section a[href="/"]:contains("back") {
+        display: none !important;
+      }
+      
+      /* More specific hiding for theme-generated back links */
+      section > p > a:first-child:last-child {
+        display: none !important;
+      }
+      
+      /* Hide any standalone "back" text links */
+      section a:only-child:contains("back") {
+        display: none !important;
+      }
+      
       header h1 a {
         color: #fff !important;
         text-decoration: none !important;
@@ -359,7 +404,15 @@
       </header>
       <section>
 
+      <div class="back-link">
+        <a href="{{ "/" | relative_url }}">&larr; Back to Home</a>
+      </div>
+
       {{ content }}
+
+      <div class="back-link back-link-bottom">
+        <a href="{{ "/" | relative_url }}">&larr; Back to Home</a>
+      </div>
 
       </section>
       </div>
