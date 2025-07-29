@@ -155,6 +155,15 @@
         margin: 15px 0 !important;
       }
       
+      /* Override for sponsor section text */
+      header p.sponsor-text {
+        color: #fff !important;
+      }
+      
+      header p.sponsor-tagline {
+        color: #fff !important;
+      }
+      
       section h1, section h2, section h3, section h4, section h5, section h6 {
         color: #fff !important;
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif !important;
@@ -394,7 +403,7 @@
         
         <hr style="border: none; border-top: 1px solid #333; margin: 20px 0;">
         
-        <p style="color: #4a9eff; text-align: left; margin: 10px 0; font-size: 0.9em;">Sponsored by:</p>
+        <p class="sponsor-text" style="color: #fff; text-align: left; margin: 10px 0; font-size: 0.9em;">Sponsored by:</p>
         
         <div style="text-align: center;">
           <a href="https://frametypesolutions.com" target="_blank">
@@ -402,7 +411,7 @@
           </a>
         </div>
         
-        <p style="color: #4a9eff; text-align: center; font-style: italic; margin: 10px 0; font-size: 1em;">Productized Solutions Built Specifically for Partners</p>
+        <p class="sponsor-tagline" style="color: #fff; text-align: center; font-style: italic; margin: 10px 0; font-size: 1em;">Productized Solutions Built Specifically for Partners</p>
 
         {% if site.show_downloads %}
         <ul class="downloads">

@@ -3,6 +3,12 @@ layout: default
 ---
 
 <small>{{ page.date | date: "%-d %B %Y" }}</small>
+{% if page.series %}
+<div style="background: #2a2a2a; padding: 10px 15px; margin-bottom: 20px; border-radius: 5px; border-left: 3px solid #4a9eff;">
+  <div style="color: #4a9eff; font-weight: bold; margin-bottom: 5px;">📚 Series: {{ page.series_title | default: page.series }}</div>
+  <div style="color: #ccc; font-size: 0.9em;">Part {{ page.series_part | default: "?" }} of the {{ page.series }} series</div>
+</div>
+{% endif %}
 <h1>{{ page.title }}</h1>
 {% if page.subtitle %}
 <div style="font-size: 2.2em; color: #4a9eff; margin-top: -10px; margin-bottom: 15px; font-weight: bold;">{{ page.subtitle }}</div>
@@ -10,6 +16,28 @@ layout: default
 <p class="view">by {{ page.author | default: site.author }}</p>
 
 {{content}}
+
+{% if page.series %}
+<div style="background: #2a2a2a; padding: 20px; margin: 30px 0; border-radius: 5px; border-left: 3px solid #4a9eff;">
+  <h3 style="color: #4a9eff; margin-top: 0; margin-bottom: 15px;">📚 More in this series</h3>
+  {% assign series_posts = site.posts | where: "series", page.series | sort: "series_part" %}
+  <ul style="list-style: none; padding: 0; margin: 0;">
+    {% for post in series_posts %}
+      <li style="margin-bottom: 8px; {% if post.url == page.url %}background: #3a3a3a; padding: 8px; border-radius: 3px;{% endif %}">
+        {% if post.url == page.url %}
+          <span style="color: #4a9eff; font-weight: bold;">Part {{ post.series_part | default: "?" }}: {{ post.subtitle | default: post.title }}</span>
+          <span style="color: #4a9eff; margin-left: 10px;">← You are here</span>
+        {% else %}
+          <a href="{{ post.url | relative_url }}" style="text-decoration: none; color: #fff;">
+            Part {{ post.series_part | default: "?" }}: {{ post.subtitle | default: post.title }}
+          </a>
+        {% endif %}
+        <div style="color: #888; font-size: 0.8em; margin-top: 2px;">{{ post.date | date: "%b %d, %Y" }}</div>
+      </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
 
 {% if page.tags %}
   <small>tags: <em>{{ page.tags | join: "</em> - <em>" }}</em></small>
