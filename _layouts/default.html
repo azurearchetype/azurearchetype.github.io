@@ -122,8 +122,18 @@
       }
       
       /* More specific hiding for theme-generated back links */
-      section > p > a:first-child:last-child {
+      section > p > a:first-child:last-child:not([href*="github.com"]) {
         display: none !important;
+      }
+      
+      /* Exception: Always show GitHub links regardless of position */
+      a[href*="github.com"],
+      section a[href*="github.com"],
+      section > p > a[href*="github.com"],
+      p > a[href*="github.com"] {
+        display: inline !important;
+        color: #4a9eff !important;
+        text-decoration: underline !important;
       }
       
       /* Hide any standalone "back" text links */
