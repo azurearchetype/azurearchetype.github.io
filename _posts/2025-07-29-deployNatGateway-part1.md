@@ -6,9 +6,11 @@ date: 2025-07-29
 author: Matthew
 ---
 
+<img src="/assets/img/deployNatGateway.png" alt="deployNatGateway" style="width: 50%; height: auto; display: block; margin: 20px auto;">
+
 ## Why are we here?
 
-In my first series as inspiring blogger I wanted to write about something that would be a helpful solution to a current issue. So I chose the deployment of an Azure NAT Gateway to provide outbound public Internet traffic for virtual machine resources deployed in Azure.
+In my first series as an inspiring blogger I wanted to write about something that would be a helpful solution to a current issue. So I chose the deployment of an Azure NAT Gateway to provide outbound public Internet traffic for virtual machine resources deployed in Azure.
 Microsoft will retire the default outbound internet access for new Azure virtual machines (VMs) on September 30, 2025. After this date, newly created VMs will require explicit outbound connectivity methods, my recommendation being a NAT gateway.  I will describe why a NAT gateway is a cost-effective and secure method for providing Internet access for compute workloads when a Firewall solution is most likely cost prohibitive.
 
 This project had the following objectives:
@@ -39,7 +41,7 @@ On my upcoming posts, we’ll cover the process building the main template, my s
 
 With all that, the deployNatGateway template is live at the following respository:
 
-[deployNatGateway](https://github.com/azurearchetype/deployNatGateway)
+<a href="https://github.com/azurearchetype/deployNatGateway" target="_blank">deployNatGateway</a>
 
 Check it out. It’s in alpha, but I wanted to get it out as there has been some traffic on the social medias regarding the Azure NAT Gateway with the announcement of the availability of Private Subnets in Azure and the September 30th deadline.
 
