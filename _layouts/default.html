@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no, viewport-fit=cover">
 
 {% seo %}
     <link rel="stylesheet" href="{{ "/assets/css/style.css?v=" | append: site.github.build_revision | relative_url }}">
@@ -14,11 +14,9 @@
     
     <!-- Custom styles to match main page -->
     <style>
-      /* Override theme styles but preserve header spacing */
-      *:not(header):not(header *) {
-        margin: 0 !important;
-        padding: 0 !important;
-        box-sizing: border-box !important;
+      /* Less aggressive reset - preserve natural box model */
+      * {
+        box-sizing: border-box;
       }
       
       html, body {
@@ -32,6 +30,13 @@
         position: static !important;
         top: 0 !important;
         left: 0 !important;
+        /* Prevent mobile zoom/snap behavior */
+        -webkit-text-size-adjust: 100% !important;
+        -ms-text-size-adjust: 100% !important;
+        text-size-adjust: 100% !important;
+        /* Smooth scrolling for mobile */
+        -webkit-overflow-scrolling: touch !important;
+        overflow-x: hidden !important;
       }
       
       .wrapper {
@@ -358,14 +363,34 @@
       
       /* Mobile responsive */
       @media (max-width: 768px) {
+        /* Prevent viewport snapping on mobile */
+        html {
+          -webkit-text-size-adjust: none !important;
+          -ms-text-size-adjust: none !important;
+          text-size-adjust: none !important;
+          touch-action: manipulation !important;
+        }
+        
+        body {
+          overflow-x: hidden !important;
+          -webkit-overflow-scrolling: touch !important;
+          transform: translateZ(0) !important;
+          backface-visibility: hidden !important;
+        }
+        
         .wrapper {
           flex-direction: column !important;
           padding: 10px !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          overflow-x: hidden !important;
         }
         
         .content-wrapper {
           flex-direction: column !important;
           gap: 15px !important;
+          width: 100% !important;
+          overflow-x: hidden !important;
         }
         
         header {
@@ -373,6 +398,8 @@
           width: 100% !important;
           order: 1 !important;
           margin-bottom: 0 !important;
+          max-width: 100% !important;
+          min-width: 0 !important;
         }
         
         section {
@@ -381,6 +408,9 @@
           order: 2 !important;
           margin-left: 0 !important;
           padding: 15px !important;
+          max-width: 100% !important;
+          min-width: 0 !important;
+          overflow-x: hidden !important;
         }
         
         /* Make images responsive on mobile */
