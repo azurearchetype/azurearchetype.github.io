@@ -7,6 +7,7 @@ author: Matthew
 series: "deployNatGateway"
 series_part: 1
 series_title: "Building an Azure NAT Gateway Template"
+discussion_url: "https://github.com/azurearchetype/deployNatGateway/discussions/deployNatGateway"
 ---
 
 <img src="/assets/img/deployNatGateway.png" alt="deployNatGateway" style="width: 50%; height: auto; display: block; margin: 20px auto;">
