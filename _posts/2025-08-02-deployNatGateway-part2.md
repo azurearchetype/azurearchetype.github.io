@@ -40,7 +40,7 @@ This ARM template will consist of the following key components:
 
 I feel we could spend an entire post just on template structures but I wanted to mention the main components in use for this solution.  This would be a good topic for Discussions in the meantime.
 
-I started with a basic NAT Gateway template pulled from GitHub using Copilot and modified it with some basic edits.
+I started with a basic NAT Gateway template pulled from GitHub using Copilot and modified it with some basic edits to the parameters and resource naming.
 
 When I am developing new IaC code, I like to add default parameter values within the template. This helps me with debugging. If I see a default value in the deployment, I know where the value is coming from and can identify if it wasn't passed down from a parameter file or another 'parent' template.
 
