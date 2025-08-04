@@ -17,7 +17,7 @@ Our flow for this step will be to take a predefined Azure Bicep resource templat
 
 ## What is Azure Bicep?
 
-Azure Bicep is defined as “a domain-specific language (DSL) designed to simplify the authoring and management of Azure infrastructure-as-code (IaC). It provides a more concise and human-readable syntax compared to JSON-based Azure Resource Manager (ARM) templates, making it easier to define and deploy Azure resources like virtual machines, storage accounts, and databases.”
+Azure Bicep is defined as “a domain-specific language (DSL) designed to simplify the authoring and management of Azure via infrastructure-as-code (IaC). It provides a more concise and human-readable syntax compared to JSON-based Azure Resource Manager (ARM) templates, making it easier to define and deploy Azure resources like virtual machines, storage accounts, and databases.”
 The syntax of JSON is not friendly as we will see. Leveraging Bicep allows you to create code in manner that is methodical and easily understandable.
 
 ### Transpilative Nature of Bicep
@@ -39,6 +39,8 @@ This ARM template will consist of the following key components:
 4. Outputs for reference
 
 I feel we could spend an entire post just on template structures but I wanted to mention the main components in use for this solution.  This would be a good topic for Discussions in the meantime.
+
+I started with a basic NAT Gateway template pulled from GitHub using Copilot and modified it with some basic edits.
 
 When I am developing new IaC code, I like to add default parameter values within the template. This helps me with debugging. If I see a default value in the deployment, I know where the value is coming from and can identify if it wasn't passed down from a parameter file or another 'parent' template.
 
@@ -105,8 +107,8 @@ resource vnet 'Microsoft.Network/virtualNetworks@2023-04-01' = {
 ## Key Resources
 
 Our template creates the following Azure resources:
-- **NAT Gateway** - The star of the show
-- **Public IP** - For the NAT Gateway's outbound connectivity
+- **NAT Gateway** - The star of the show.
+- **Public IP** - For the NAT Gateway's outbound connectivity.
 
 Our template references these existing Azure resources:
 - **Virtual Network** - The foundation for Azure connectivity.
