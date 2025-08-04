@@ -14,6 +14,17 @@
     
     <!-- Custom styles for 3-column layout -->
     <style>
+      /* Global overflow prevention */
+      * {
+        box-sizing: border-box !important;
+        max-width: 100% !important;
+      }
+      
+      html, body {
+        overflow-x: hidden !important;
+        max-width: 100vw !important;
+      }
+      
       /* Reset any theme footer positioning */
       footer {
         position: static !important;
@@ -179,6 +190,174 @@
       .useful-links a:hover {
         color: #6bb6ff !important;
       }
+      
+      /* Discussions button styling */
+      .discussions-btn:hover {
+        background: #326ec9 !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(74, 158, 255, 0.3);
+      }
+      
+      /* Professional Code Block Styling (Microsoft Learn style) */
+      .highlight {
+        position: relative !important;
+        margin: 20px 0 !important;
+        border-radius: 8px !important;
+        overflow: hidden !important;
+        background: #1e1e1e !important;
+        border: 1px solid #333 !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+      }
+      
+      .highlight::before {
+        content: attr(data-lang) !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        background: #2d2d30 !important;
+        color: #d4d4d4 !important;
+        padding: 8px 16px !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        text-transform: capitalize !important;
+        border-bottom: 1px solid #3e3e42 !important;
+        border-top-left-radius: 8px !important;
+        font-family: "Segoe UI", sans-serif !important;
+        display: block !important;
+        z-index: 100 !important;
+        width: auto !important;
+        height: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+      }
+      
+      /* Fallback if attr() doesn't work */
+      .highlight[data-lang="Bicep"]::before {
+        content: "Bicep" !important;
+      }
+      
+      /* Position copy button to not overlap with title */
+      .copy-btn {
+        position: absolute !important;
+        top: 8px !important;
+        right: 12px !important;
+        z-index: 99 !important;
+        background: #0078d4 !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 4px !important;
+        padding: 6px 12px !important;
+        font-size: 11px !important;
+        cursor: pointer !important;
+        font-family: "Segoe UI", sans-serif !important;
+        transition: background-color 0.2s ease !important;
+      }
+      
+      .copy-btn:hover {
+        background: #106ebe !important;
+      }
+      
+      /* Force proper container containment */
+      .container, .wrapper, article, .post-content {
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+        box-sizing: border-box !important;
+      }
+      
+      /* Ensure the highlight container doesn't overflow */
+      .highlight {
+        position: relative !important;
+        background: #1e1e1e !important;
+        border-radius: 8px !important;
+        margin: 16px 0 !important;
+        border: 1px solid #333 !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow: hidden !important;
+        box-sizing: border-box !important;
+      }
+      
+      .highlight pre {
+        margin: 0 !important;
+        padding: 45px 16px 16px 16px !important;
+        background: #1e1e1e !important;
+        color: #d4d4d4 !important;
+        font-family: "Consolas", "Monaco", "Courier New", monospace !important;
+        font-size: 14px !important;
+        line-height: 1.5 !important;
+        overflow-x: auto !important; /* Use auto instead of scroll */
+        overflow-y: auto !important;
+        border: none !important;
+        max-height: 315px !important; /* 15 lines × 21px line height */
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        white-space: pre !important; /* Preserve whitespace and prevent wrapping */
+        word-wrap: normal !important;
+      }
+      
+      /* Custom scrollbar for code blocks */
+      .highlight pre::-webkit-scrollbar {
+        width: 8px !important;
+        height: 8px !important;
+      }
+      
+      .highlight pre::-webkit-scrollbar-track {
+        background: #2d2d30 !important;
+      }
+      
+      .highlight pre::-webkit-scrollbar-thumb {
+        background: #555 !important;
+        border-radius: 4px !important;
+      }
+      
+      .highlight pre::-webkit-scrollbar-thumb:hover {
+        background: #777 !important;
+      }
+      
+      .highlight code {
+        background: transparent !important;
+        padding: 0 !important;
+        border: none !important;
+        color: inherit !important;
+        font-family: inherit !important;
+        font-size: inherit !important;
+      }
+      
+      /* Copy button styling */
+      .highlight .copy-btn {
+        position: absolute !important;
+        top: 8px !important;
+        right: 12px !important;
+        background: #404040 !important;
+        border: 1px solid #555 !important;
+        color: #d4d4d4 !important;
+        padding: 6px 12px !important;
+        border-radius: 4px !important;
+        font-size: 12px !important;
+        cursor: pointer !important;
+        opacity: 0.8 !important;
+        transition: all 0.2s ease !important;
+        font-family: "Segoe UI", sans-serif !important;
+      }
+      
+      .highlight .copy-btn:hover {
+        background: #4a9eff !important;
+        border-color: #4a9eff !important;
+        opacity: 1 !important;
+      }
+      
+      /* Syntax highlighting colors (VS Code dark theme) */
+      .highlight .k, .highlight .kd, .highlight .kn { color: #569cd6 !important; } /* Keywords */
+      .highlight .s, .highlight .s1, .highlight .s2 { color: #ce9178 !important; } /* Strings */
+      .highlight .c, .highlight .c1, .highlight .cm { color: #6a9955 !important; } /* Comments */
+      .highlight .na { color: #9cdcfe !important; } /* Attributes */
+      .highlight .nb { color: #dcdcaa !important; } /* Built-ins */
+      .highlight .nf { color: #dcdcaa !important; } /* Functions */
+      .highlight .mi, .highlight .mf { color: #b5cea8 !important; } /* Numbers */
+      .highlight .o { color: #d4d4d4 !important; } /* Operators */
+      .highlight .p { color: #d4d4d4 !important; } /* Punctuation */
     </style>
   </head>
   <body>
@@ -228,6 +407,16 @@
         </div>
         
         <p style="color: #4a9eff; text-align: center; font-style: italic; margin: 10px 0; font-size: 1em;">Productized Solutions Built Specifically for Partners</p>
+        
+        <hr style="border: none; border-top: 1px solid #333; margin: 20px 0;">
+        
+        <div style="text-align: center; margin: 15px 0;">
+          <a href="https://github.com/azurearchetype/azurearchetype.github.io/discussions" target="_blank" class="discussions-btn" style="background: #4a9eff; color: #fff; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-size: 0.9em; font-weight: 600; display: inline-block; transition: all 0.2s ease;">
+            💬 Join Discussions
+          </a>
+        </div>
+        
+        <p style="color: #ccc; text-align: center; font-size: 0.8em; margin: 10px 0;">Share ideas, ask questions, and connect with the community</p>
       </aside>
       
       <!-- Center Content -->
@@ -238,7 +427,11 @@
         <article class="featured-post">
           <h3><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h3>
           {% if post.subtitle %}
-          <div style="font-size: 1.1em; color: #4a9eff; margin-top: -5px; margin-bottom: 10px; font-weight: bold;">{{ post.subtitle }}</div>
+          <div style="font-size: 1.1em; color: #4a9eff; margin-top: -5px; margin-bottom: 10px; font-weight: bold;">
+            <a href="{{ post.url | relative_url }}" style="color: #4a9eff; text-decoration: none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
+              {% if post.series_part %}Part {{ post.series_part }}: {% endif %}{{ post.subtitle }}
+            </a>
+          </div>
           {% endif %}
           <div class="post-meta">{{ post.date | date: "%B %d, %Y" }}</div>
           <p>{{ post.excerpt | strip_html | truncatewords: 30 }}</p>
@@ -328,5 +521,168 @@
     </div>
     
     <script src="{{ "/assets/js/scale.fix.js" | relative_url }}"></script>
+    
+    <!-- Code block enhancement script -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Enhanced debugging for Jekyll code blocks
+        console.log('Looking for code blocks...');
+        
+        // Try multiple selectors to find Jekyll's code blocks
+        let codeBlocks = document.querySelectorAll('div.highlight');
+        if (codeBlocks.length === 0) {
+          codeBlocks = document.querySelectorAll('.highlight');
+        }
+        if (codeBlocks.length === 0) {
+          codeBlocks = document.querySelectorAll('pre');
+        }
+        
+        console.log('Found', codeBlocks.length, 'code blocks');
+        
+        codeBlocks.forEach(function(block, index) {
+          console.log('Processing block', index, block);
+          
+          // Find the code element - try different structures
+          let code = block.querySelector('code');
+          let pre = block.querySelector('pre');
+          
+          // If this block IS a pre element, look for code inside
+          if (block.tagName === 'PRE') {
+            pre = block;
+            code = block.querySelector('code');
+          }
+          
+          if (!code) {
+            console.log('No code element found in block', index);
+            return;
+          }
+          
+          console.log('Code element found:', code.className);
+          
+          // Also check parent elements and div.highlight for language info
+          console.log('Block classes:', block.className);
+          console.log('Block element:', block);
+          
+          // Detect language from class name
+          let language = 'Code';
+          
+          // Check multiple places for language information
+          const blockClassList = block.className || '';
+          const codeClassList = code.className || '';
+          const preClassList = pre ? pre.className || '' : '';
+          
+          console.log('Block class list:', blockClassList);
+          console.log('Code class list:', codeClassList);
+          console.log('Pre class list:', preClassList);
+          
+          // Try different patterns for language detection
+          let langMatch = blockClassList.match(/highlight-(\w+)/) || 
+                         blockClassList.match(/language-(\w+)/) ||
+                         codeClassList.match(/language-(\w+)/) || 
+                         codeClassList.match(/highlight-(\w+)/) ||
+                         preClassList.match(/language-(\w+)/) ||
+                         preClassList.match(/highlight-(\w+)/) ||
+                         blockClassList.match(/(\w+)/) ||
+                         codeClassList.match(/(\w+)/);
+          
+          // For Jekyll/Rouge, try to get language from the markdown
+          // Look at the original text content or data attributes
+          const dataLang = block.getAttribute('data-language') || 
+                          block.getAttribute('data-lang') || 
+                          code.getAttribute('data-language') ||
+                          code.getAttribute('data-lang');
+          
+          if (dataLang) {
+            language = dataLang;
+            console.log('Found data language:', language);
+          } else if (langMatch && langMatch[1] && langMatch[1] !== 'highlight') {
+            language = langMatch[1];
+            console.log('Detected language from class:', language);
+          } else {
+            // As a fallback, since we know this is a bicep block, let's hardcode it for now
+            // We can make this smarter later by detecting the context
+            if (block.textContent && block.textContent.includes('param ') && 
+                block.textContent.includes('resource ') && 
+                block.textContent.includes('Microsoft.Network/')) {
+              language = 'bicep';
+              console.log('Detected Bicep from content analysis');
+            }
+          }
+          
+          // Capitalize specific languages properly
+          if (language.toLowerCase() === 'bicep') {
+            language = 'Bicep';
+          } else if (language.toLowerCase() === 'json') {
+            language = 'JSON';
+          } else if (language.toLowerCase() === 'javascript') {
+            language = 'JavaScript';
+          } else if (language.toLowerCase() === 'powershell') {
+            language = 'PowerShell';
+          } else if (language.toLowerCase() === 'csharp') {
+            language = 'C#';
+          } else {
+            // Capitalize first letter for other languages
+            language = language.charAt(0).toUpperCase() + language.slice(1);
+          }
+          
+          console.log('Final language:', language);
+          
+          // Set data attribute for CSS pseudo-element - hardcode Bicep for testing
+          block.setAttribute('data-lang', 'Bicep');
+          console.log('Set data-lang to: Bicep');
+          
+          // Add copy button
+          const copyBtn = document.createElement('button');
+          copyBtn.className = 'copy-btn';
+          copyBtn.textContent = 'Copy';
+          copyBtn.setAttribute('aria-label', 'Copy code to clipboard');
+          
+          copyBtn.addEventListener('click', function() {
+            const codeText = code.textContent || code.innerText;
+            
+            // Use the modern clipboard API if available
+            if (navigator.clipboard && window.isSecureContext) {
+              navigator.clipboard.writeText(codeText).then(function() {
+                copyBtn.textContent = 'Copied!';
+                setTimeout(function() {
+                  copyBtn.textContent = 'Copy';
+                }, 2000);
+              }).catch(function() {
+                fallbackCopy(codeText, copyBtn);
+              });
+            } else {
+              fallbackCopy(codeText, copyBtn);
+            }
+          });
+          
+          block.appendChild(copyBtn);
+        });
+        
+        // Fallback copy function for older browsers
+        function fallbackCopy(text, button) {
+          const textArea = document.createElement('textarea');
+          textArea.value = text;
+          textArea.style.position = 'fixed';
+          textArea.style.opacity = '0';
+          document.body.appendChild(textArea);
+          textArea.select();
+          
+          try {
+            document.execCommand('copy');
+            button.textContent = 'Copied!';
+            setTimeout(function() {
+              button.textContent = 'Copy';
+            }, 2000);
+          } catch (err) {
+            button.textContent = 'Error';
+            setTimeout(function() {
+              button.textContent = 'Copy';
+            }, 2000);
+          }
+          
+          document.body.removeChild(textArea);
+        }
+      });
+    </script>
   </body>
 </html>

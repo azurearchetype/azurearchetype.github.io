@@ -10,9 +10,9 @@ series_title: "Building an Azure NAT Gateway Template"
 discussion_url: "https://github.com/azurearchetype/deployNatGateway/discussions/deployNatGateway"
 ---
 
-<img src="/assets/img/deployNatGateway.png" alt="deployNatGateway" style="width: 50%; height: auto; display: block; margin: 20px auto;">
-
 ## Why are we here?
+
+<img src="/assets/img/deployNatGateway.png" alt="deployNatGateway" style="width: 50%; height: auto; display: block; margin: 20px auto;">
 
 In my first series as an aspiring blogger I wanted to write about something that would be a helpful solution to a current issue. So I chose the creation of an Azure NAT Gateway resource via a custom Azure template. I wanted this template to be deployed from a public GitHub repository and leverage a custom UI template file for user inputs.
 
