@@ -2,7 +2,7 @@
 layout: post
 title: "IaC Deployment of AVD Observations"
 subtitle: "- Part 1: Entra Kerberos - No Domain Services"
-date: 2026-03-12
+date: 2026-02-11
 author: Matthew
 
 series: "avd-iac-observations"
