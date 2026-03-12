@@ -6,7 +6,7 @@ date: 2026-02-25
 author: Matthew
 
 series: "avd-iac-observations"
-series_part: 2
+series_part: 1
 series_title: "IaC Deployment of AVD Observations"
 
 tags:
