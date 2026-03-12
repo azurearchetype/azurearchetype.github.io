@@ -1,13 +1,13 @@
 ---
 layout: post
 title: "IaC Deployment of AVD Observations"
-subtitle: "- Host Pool Registration via ARM"
+subtitle: "-IaC FSLogix Registry Configurations"
 date: 2026-03-04
 author: Matthew
 
 series: "avd-iac-observations"
 series_part: 3
-series_title: "IaC FSLogix Registry Configurations"
+series_title: "IaC Deployment of AVD Observations"
 
 tags:
   - azure
