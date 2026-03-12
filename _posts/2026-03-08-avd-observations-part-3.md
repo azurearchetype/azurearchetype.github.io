@@ -1,3 +1,20 @@
+---
+layout: post
+title: "IaC Deployment of AVD Observations"
+subtitle: "- Host Pool Registration via ARM"
+date: 2026-03-04
+author: Matthew
+
+series: "avd-iac-observations"
+series_part: 3
+series_title: "IaC FSLogix Registry Configurations"
+
+tags:
+  - azure
+  - avd
+  - iac
+---
+
 # Azure Virtual Desktop + FSLogix
 ## Configuring Registry Keys Reliably Inside an ARM Template
 
