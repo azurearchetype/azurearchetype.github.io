@@ -1,3 +1,20 @@
+---
+layout: post
+title: "IaC Deployment of AVD Observations"
+subtitle: "- Host Pool Registration via ARM"
+date: 2026-02-25
+author: Matthew
+
+series: "avd-iac-observations"
+series_part: 2
+series_title: "IaC Deployment of AVD Observations"
+
+tags:
+  - azure
+  - avd
+  - iac
+---
+
 # Azure Virtual Desktop + ARM Templates
 ## Deploying Host Pools and Registering Session Hosts Without a Script
 
