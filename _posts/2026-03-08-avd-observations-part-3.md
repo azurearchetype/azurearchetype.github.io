@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "IaC Deployment of AVD Observations"
-subtitle: "-IaC FSLogix Registry Configurations"
+subtitle: "IaC FSLogix Registry Configurations"
 date: 2026-03-04
 author: Matthew
 
