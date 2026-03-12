@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "IaC Deployment of AVD Observations"
-subtitle: "- Host Pool Registration via ARM"
+subtitle: "Host Pool Registration via ARM"
 date: 2026-02-25
 author: Matthew
 
