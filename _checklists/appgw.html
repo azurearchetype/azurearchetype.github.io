@@ -1,0 +1,319 @@
+---
+layout: checklist
+title: "Application Gateway Pre-Deployment Checklist"
+subtitle: "Azure Application Gateway v2 — all prerequisites and configuration decisions"
+badge: "Azure Networking"
+description: |
+  A comprehensive pre-deployment checklist for Azure Application Gateway v2.
+
+  This list covers networking prerequisites, identity & access, SSL/TLS certificates, backend pool configuration, listeners & routing rules, WAF settings, monitoring & diagnostics, and IaC deployment patterns.
+
+  Work through each section to prepare for your resource deployment.
+github_url: "https://github.com/azurearchetype/deployAppGateway"
+resource_type: "Azure Application Gateway"
+---
+
+<div class="complete-banner" id="completeBanner">
+  ✅ All items checked — ready to deploy.
+</div>
+
+<div class="progress-bar-wrap">
+  <span class="progress-label">Progress</span>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <span class="progress-pct" id="progressPct">0%</span>
+  <span class="progress-label" id="progressCount">0 / 0</span>
+</div>
+
+<div class="arm-legend">
+  <span class="arm-badge">&#9654; ARM</span> Items marked <strong>ARM</strong> map to required properties in the ARM resource declaration — the portal will not submit and the ARM/Bicep template will fail validation without them.
+</div>
+
+<div class="sections" id="sections"></div>
+
+<div class="actions">
+  <button class="btn-primary" onclick="expandAll()">Expand all</button>
+  <button class="btn-ghost" onclick="collapseAll()">Collapse all</button>
+  <button class="btn-ghost" onclick="resetAll()">Reset checklist</button>
+</div>
+
+<div class="compliance-panel">
+  <h2 class="compliance-heading">Compliance alignment</h2>
+  <p class="compliance-intro">This checklist is reviewed and maintained against three Microsoft architectural frameworks. Items within each section are tagged <span class="tag tag-required">required</span>, <span class="tag tag-recommended">recommended</span>, or <span class="tag tag-optional">optional</span> based on framework guidance — with Zero Trust items typically driving the <span class="tag tag-required">required</span> bar, and Well-Architected pillar guidance informing the <span class="tag tag-recommended">recommended</span> set.</p>
+  <div class="compliance-cards">
+
+    <div class="compliance-card">
+      <div class="compliance-card-header">
+        <span class="compliance-icon caf">CAF</span>
+        <div>
+          <div class="compliance-card-title">Cloud Adoption Framework</div>
+          <div class="compliance-card-subtitle">Governance &amp; operations</div>
+        </div>
+      </div>
+      <p>Governance coverage includes required resource tagging per organizational policy, IaC stored in source control with branch protection and PR review, and Azure Policy compliance checks against the AGW configuration. Operational excellence is addressed through a scoped service principal for CI/CD pipelines (no interactive credentials in automation) and cost management via capacity unit consumption alerts. Landing zone placement — subscription, resource group, and region — is verified up front to align with CAF management group hierarchy.</p>
+    </div>
+
+    <div class="compliance-card">
+      <div class="compliance-card-header">
+        <span class="compliance-icon waf">WAF</span>
+        <div>
+          <div class="compliance-card-title">Well-Architected Framework</div>
+          <div class="compliance-card-subtitle">All five pillars</div>
+        </div>
+      </div>
+      <p><strong>Reliability:</strong> zone-redundant deployment, autoscaling minimums, health probe configuration, and connection draining. <strong>Security:</strong> WAF Prevention mode, DDoS Network Protection, Microsoft Defender for Cloud, and TLS 1.2+ enforcement with strong cipher suites. <strong>Performance Efficiency:</strong> HTTP/2, connection pooling, and autoscaling ceiling guidance. <strong>Cost Optimization:</strong> capacity unit alerts and right-sized SKU selection. <strong>Operational Excellence:</strong> diagnostic settings, Log Analytics workbooks, metric alerts, and IaC hygiene with lock and tagging policies.</p>
+    </div>
+
+    <div class="compliance-card">
+      <div class="compliance-card-header">
+        <span class="compliance-icon zt">ZT</span>
+        <div>
+          <div class="compliance-card-title">Zero Trust</div>
+          <div class="compliance-card-subtitle">Verify, least privilege, assume breach</div>
+        </div>
+      </div>
+      <p><strong>Network segmentation:</strong> default-deny NSG posture on all subnets, backend subnets block direct Internet inbound (all client traffic must traverse AGW/WAF), and private endpoints recommended for backend services. <strong>Least privilege:</strong> PIM/JIT elevation for operational teams — no standing Contributor access — and workload identity federation for pipeline service principals with minimum-scoped RBAC. <strong>Encrypt all traffic:</strong> TLS 1.2 minimum policy on listeners, end-to-end TLS to backends, and mTLS evaluated for sensitive API listeners.</p>
+    </div>
+
+  </div>
+</div>
+
+<div class="references-panel">
+  <h2 class="references-heading">References</h2>
+  <div class="references-body">
+    <a class="ref-top-link" href="https://learn.microsoft.com/en-us/azure/application-gateway/overview" target="_blank" rel="noopener">Azure Application Gateway documentation — Microsoft Learn</a>
+    <div class="ref-groups">
+
+      <div class="ref-group">
+        <p class="ref-group-title">Architecture &amp; concepts</p>
+        <ul>
+          <li><a href="https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-components" target="_blank" rel="noopener">Gateway components</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/application-gateway/configuration-infrastructure" target="_blank" rel="noopener">NSG &amp; subnet requirements</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-autoscaling-zone-redundant" target="_blank" rel="noopener">Autoscaling &amp; zone redundancy</a></li>
+        </ul>
+      </div>
+
+      <div class="ref-group">
+        <p class="ref-group-title">TLS &amp; certificates</p>
+        <ul>
+          <li><a href="https://learn.microsoft.com/en-us/azure/application-gateway/ssl-overview" target="_blank" rel="noopener">End-to-end TLS overview</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-ssl-policy-overview" target="_blank" rel="noopener">TLS policy overview</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/application-gateway/key-vault-certs" target="_blank" rel="noopener">Key Vault certificate integration</a></li>
+        </ul>
+      </div>
+
+      <div class="ref-group">
+        <p class="ref-group-title">WAF</p>
+        <ul>
+          <li><a href="https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/ag-overview" target="_blank" rel="noopener">WAF on Application Gateway</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/application-gateway-crs-rulegroups-rules" target="_blank" rel="noopener">OWASP CRS rule groups</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/create-waf-policy-ag" target="_blank" rel="noopener">Create a WAF policy</a></li>
+        </ul>
+      </div>
+
+      <div class="ref-group">
+        <p class="ref-group-title">Monitoring &amp; operations</p>
+        <ul>
+          <li><a href="https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-probe-overview" target="_blank" rel="noopener">Health probe overview</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-diagnostics" target="_blank" rel="noopener">Diagnostics &amp; logging</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/application-gateway/rewrite-http-headers-url" target="_blank" rel="noopener">Rewrite HTTP headers &amp; URLs</a></li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const data = [
+  {
+    id: 'network', cls: 's-network', icon: 'NET', title: 'Networking prerequisites',
+    items: [
+      { label: 'Virtual network exists in the target region', detail: 'Application Gateway must be deployed into an existing VNet — it cannot be deployed standalone.', tag: 'required', arm: true },
+      { label: 'Dedicated subnet provisioned for Application Gateway', detail: 'AGW requires its own subnet containing nothing else. Minimum /26, recommended /24 for autoscaling headroom. Suggested name: snet-appgw.', tag: 'required', arm: true },
+      { label: 'Subnet not shared with other resources', detail: 'No VMs, AKS nodes, or other PaaS services in the AGW subnet. The subnet must be exclusively reserved for Application Gateway instances.', tag: 'required' },
+      { label: 'NSG rules planned for AGW subnet', detail: 'Inbound: allow ports 65200–65535 from GatewayManager service tag (health probes — gateway goes unhealthy without this), allow 443/80 from Internet, allow AzureLoadBalancer. Outbound: allow to backend subnets.', tag: 'required' },
+      { label: 'Standard SKU static public IP address provisioned', detail: 'AGW v2 requires a Standard SKU static public IP. Basic SKU is not supported. For zone-redundant deployments, the IP must also be zone-redundant.', tag: 'required', arm: true },
+      { label: 'Private frontend IP planned (if internal-facing)', detail: 'If AGW is internal-only, configure a private IP from within the AGW subnet range. Can be combined with public IP for dual-stack scenarios.', tag: 'optional' },
+      { label: 'Backend subnet CIDR ranges noted', detail: 'Know the IP ranges of your backend pools so NSG outbound rules and UDRs can be scoped correctly to those ranges.', tag: 'recommended' },
+      { label: 'Availability zones selected', detail: 'v2 SKU supports zone-redundant deployment across 1, 2, or 3 AZs. Zone-redundant deployment requires a zone-redundant public IP and backends in matching zones.', tag: 'recommended' },
+      { label: 'NSG default-deny posture confirmed', detail: 'Zero Trust network segmentation: all NSG rule sets should end with an explicit deny-all inbound and deny-all outbound rule. Only explicitly enumerated traffic is permitted. Validate both the AGW subnet NSG and backend subnet NSGs.', tag: 'required' },
+      { label: 'Backend subnet blocks direct Internet inbound', detail: 'Zero Trust — assume breach: the backend subnet NSG must have no rules permitting inbound from the Internet service tag. All client traffic must traverse the Application Gateway. Direct backend access bypasses WAF and all routing controls.', tag: 'required' },
+      { label: 'DDoS Network Protection plan associated with the VNet', detail: 'CAF and WAF Security pillar: for internet-facing production workloads, enable Azure DDoS Network Protection on the VNet hosting the AGW public IP. DDoS Basic (default) provides limited volumetric protection only.', tag: 'recommended' }
+    ]
+  },
+  {
+    id: 'identity', cls: 's-identity', icon: 'IAM', title: 'Identity & access',
+    items: [
+      { label: 'Target subscription and resource group confirmed', detail: 'Confirm which subscription and RG the gateway lands in. This affects RBAC scope for managed identity and Key Vault assignments.', tag: 'required' },
+      { label: 'Deploying principal has Contributor on the RG', detail: 'The service principal or user running the deployment needs at least Contributor on the resource group, plus Key Vault Certificates Officer if importing certs.', tag: 'required' },
+      { label: 'User-assigned managed identity created', detail: 'Required if pulling SSL certificates from Key Vault. Create the identity before the gateway so it can be assigned at deploy time.', tag: 'recommended' },
+      { label: 'Managed identity assigned Key Vault Secrets User role', detail: 'Grant the managed identity the Key Vault Secrets User role on the Key Vault. Without this, the listener cert reference fails silently at startup.', tag: 'recommended' },
+      { label: 'RBAC roles planned for ongoing operations', detail: 'Who modifies the gateway post-deployment? Consider Network Contributor for ops teams. Avoid Owner unless necessary. Reader-only for monitoring teams.', tag: 'recommended' },
+      { label: 'PIM / JIT access configured for operational teams', detail: 'Zero Trust — least privileged access: no standing Contributor or higher role on the AGW resource group for ops teams. Use Azure AD Privileged Identity Management (PIM) with time-bound, approval-gated elevation for configuration changes.', tag: 'recommended' },
+      { label: 'Deployment pipeline uses scoped service principal, not user credentials', detail: 'Zero Trust / CAF: CI/CD pipelines must authenticate with a service principal (or workload identity federation) scoped to the minimum RBAC role required. Interactive user credentials must never be embedded in pipelines.', tag: 'recommended' }
+    ]
+  },
+  {
+    id: 'cert', cls: 's-cert', icon: 'TLS', title: 'SSL / TLS certificates',
+    items: [
+      { label: 'Frontend SSL certificate obtained in PFX format', detail: 'Must include the private key. Wildcard (*.domain.com) or SAN cert covering all hostnames you plan to serve. If using Key Vault, import as a Certificate object, not a Secret.', tag: 'required', arm: true },
+      { label: 'Certificate covers all planned listener hostnames', detail: 'Verify each hostname your listeners will serve is covered by the cert CN or SAN entries. Note wildcard scope: *.contoso.com covers api.contoso.com but not sub.api.contoso.com or the root contoso.com.', tag: 'required' },
+      { label: 'Certificate stored in Azure Key Vault', detail: 'Upload PFX to Key Vault as a Certificate. Note the versionless secret URI for the listener reference — versionless allows auto-rotation without redeployment.', tag: 'recommended' },
+      { label: 'Key Vault has soft-delete and purge protection enabled', detail: 'Required by Microsoft best practice. Prevents accidental cert deletion from breaking the gateway. Enable before importing the certificate.', tag: 'recommended' },
+      { label: 'TLS policy enforces TLS 1.2 minimum with strong cipher suite', detail: 'Zero Trust — encrypt all traffic: apply AppGwSslPolicy2022-01 (or a custom policy) to disable TLS 1.0/1.1 and weak cipher suites (RC4, 3DES, export ciphers). This must be set explicitly — the default policy permits legacy TLS versions.', tag: 'required' },
+      { label: 'End-to-end TLS enabled to backends', detail: 'Zero Trust — assume breach: terminate TLS at AGW and re-encrypt traffic to backends (HTTPS backend setting). Plaintext HTTP to backends is acceptable only on isolated private subnets with compensating controls explicitly documented.', tag: 'recommended' },
+      { label: 'Backend root certificate obtained (if end-to-end TLS)', detail: 'If backends serve HTTPS with a private CA or self-signed cert, export the root CA certificate (.cer, public key only) for upload to AGW backend HTTP settings.', tag: 'optional' },
+      { label: 'Certificate expiry date noted and renewal process defined', detail: 'Know the cert expiry. Key Vault + managed identity supports auto-rotation. If uploading PFX directly to AGW, plan a manual renewal reminder well in advance.', tag: 'recommended' },
+      { label: 'Mutual TLS (mTLS) evaluated for sensitive API listeners', detail: 'Zero Trust — verify explicitly: for APIs handling sensitive data or internal service-to-service traffic, evaluate enabling client certificate authentication on the listener. mTLS validates the caller identity, not just the server identity.', tag: 'optional' }
+    ]
+  },
+  {
+    id: 'backend', cls: 's-backend', icon: 'BE', title: 'Backend pool',
+    items: [
+      { label: 'All backend targets identified', detail: 'List every backend member: IP addresses, FQDNs, App Service hostnames, or VM scale set references. AGW supports mixed pool types within a single pool.', tag: 'required', arm: true },
+      { label: 'Backend protocol and port confirmed per pool', detail: 'Is each backend serving HTTP (80) or HTTPS (443)? This drives the backend HTTP settings configuration and whether a root cert upload is needed.', tag: 'required', arm: true },
+      { label: 'Health probe path confirmed per backend pool', detail: 'Know the HTTP path that returns 200 for each pool (e.g. /health, /api/status). Default probe uses / — override if that path returns a redirect or auth challenge, which AGW interprets as unhealthy.', tag: 'required' },
+      { label: 'Backend Host header requirements understood', detail: 'App Service and APIM require the Host header to match their hostname. Decide per pool: pick hostname from backend address, or set a custom override value in HTTP settings.', tag: 'required' },
+      { label: 'Backend subnet NSG allows inbound from AGW subnet', detail: 'The backend subnet NSG must allow inbound traffic on the backend port from the AGW subnet CIDR. This is the most common cause of "unhealthy host" after initial deployment.', tag: 'required' },
+      { label: 'Session affinity requirements noted', detail: 'If backends require sticky sessions, enable cookie-based affinity in the HTTP settings. Leave off for stateless backends — affinity adds overhead and uneven load distribution.', tag: 'optional' },
+      { label: 'Connection draining timeout decided', detail: 'Set a drain timeout (default 30s) so in-flight requests complete gracefully during backend maintenance or scale-in events. Critical for zero-downtime deployments.', tag: 'recommended' },
+      { label: 'Private endpoints used for backend services where supported', detail: 'Zero Trust — reduce network exposure: backend Azure services (App Service, API Management, Azure Functions, Storage) should be accessed via Private Endpoints rather than public hostnames. Eliminates exposure of backend services to the internet entirely.', tag: 'recommended' }
+    ]
+  },
+  {
+    id: 'routing', cls: 's-routing', icon: 'RT', title: 'Listeners & routing rules',
+    items: [
+      { label: 'All hostnames to be served listed', detail: 'Every distinct FQDN needs its own multi-site listener. Single-site listener only if serving one hostname on one IP. Plan listener count before deployment.', tag: 'required', arm: true },
+      { label: 'Routing rule type decided per listener', detail: 'Basic rule: all traffic on a listener goes to one backend pool. Path-based rule: /api/* to pool A, /static/* to pool B. Plan URL path maps now if path-based routing is needed.', tag: 'required', arm: true },
+      { label: 'HTTP-to-HTTPS redirect rule planned', detail: 'Add a listener on port 80 with a redirect rule pointing to the corresponding HTTPS listener. Best practice — prevents plain-text traffic without requiring any backend changes.', tag: 'recommended' },
+      { label: 'Request timeout value decided per HTTP settings', detail: 'Default is 20 seconds. Long-running calls (file uploads, reports, batch APIs) may need this increased. Set per HTTP settings object, not globally.', tag: 'optional' },
+      { label: 'Rewrite rules identified', detail: 'If you need to rewrite request/response headers or URL paths before forwarding (e.g. strip /api prefix, add correlation headers, rewrite Location headers), plan the rewrite rule sets now.', tag: 'optional' },
+      { label: 'Custom error pages considered', detail: 'AGW supports custom HTML error pages for 403 (WAF block) and 502 (bad gateway) responses. Requires a publicly accessible blob URL hosting the HTML file.', tag: 'optional' }
+    ]
+  },
+  {
+    id: 'waf', cls: 's-waf', icon: 'WAF', title: 'WAF (WAF_v2 SKU only)',
+    items: [
+      { label: 'WAF_v2 SKU confirmed (not Standard_v2)', detail: 'WAF is only available on the WAF_v2 SKU. Standard_v2 does not include WAF capability. SKU cannot be changed after deployment — confirm before provisioning.', tag: 'required', arm: true },
+      { label: 'WAF mode decided: Detection vs Prevention', detail: 'Always start in Detection mode to baseline false positives before switching to Prevention. Detection logs without blocking. Prevention blocks matched requests and can break legitimate traffic if not tuned first.', tag: 'required', arm: true },
+      { label: 'OWASP ruleset version selected', detail: 'OWASP CRS 3.2 is the current recommended baseline. Microsoft DRS (Default Rule Set) is also available and is Microsoft-managed with faster updates. CRS 3.1 available for legacy compatibility.', tag: 'required', arm: true },
+      { label: 'WAF policy resource created as a standalone resource', detail: 'Best practice: create a WAF Policy resource and associate it with the gateway, rather than configuring WAF inline on the gateway. The policy can then be updated, versioned, and reused independently.', tag: 'recommended' },
+      { label: 'Known false-positive exclusions identified', detail: 'If your application sends large cookies, encoded JSON, file upload payloads, or custom auth headers, identify WAF rules likely to fire. Plan exclusions before switching to Prevention mode.', tag: 'recommended' },
+      { label: 'Bot protection ruleset considered', detail: 'Available as an add-on ruleset. Blocks known malicious bots, scanners, and crawlers. Recommended to enable unless you have a specific reason (e.g. legitimate scraping partners).', tag: 'recommended' },
+      { label: 'WAF Prevention mode target date defined', detail: 'WAF Security pillar: Detection mode is a tuning phase, not a permanent state. Define a target date to transition to Prevention mode and track it. Detection-only WAF provides no blocking protection.', tag: 'recommended' },
+      { label: 'Rate limiting rules planned for sensitive endpoints', detail: 'Zero Trust — assume breach: configure per-IP or per-client rate limiting on high-value endpoints (authentication, payment, admin paths) to limit the blast radius of credential-stuffing or brute-force attacks. Requires custom WAF rules.', tag: 'recommended' },
+      { label: 'Security response headers added via rewrite rules', detail: 'WAF Security pillar: use AGW rewrite rules to inject security headers on all responses: Strict-Transport-Security (HSTS), X-Content-Type-Options: nosniff, X-Frame-Options: DENY, and a Content-Security-Policy appropriate to the application.', tag: 'recommended' }
+    ]
+  },
+  {
+    id: 'monitor', cls: 's-monitor', icon: 'OBS', title: 'Monitoring & diagnostics',
+    items: [
+      { label: 'Log Analytics workspace identified', detail: 'Decide which workspace receives AGW diagnostic logs. Create one if it does not exist. Reusing the same workspace as other resources in the environment is fine and reduces query complexity.', tag: 'required' },
+      { label: 'Diagnostic settings planned for all log categories', detail: 'Enable ApplicationGatewayAccessLog, ApplicationGatewayFirewallLog, and ApplicationGatewayPerformanceLog. Send to Log Analytics. Optionally also to a storage account for long-term retention or compliance.', tag: 'required' },
+      { label: 'Alert defined: UnhealthyHostCount > 0', detail: 'The single most important operational alert for AGW. Fire when any backend pool member goes unhealthy. Scope per backend pool so alerts are actionable rather than aggregate.', tag: 'recommended' },
+      { label: 'Alert defined: FailedRequests rising above baseline', detail: 'Alert on FailedRequests metric. Combine with ResponseStatus breakdown to distinguish 4xx (client errors) from 5xx (backend errors). Avoid alerting on 4xx without a rate threshold.', tag: 'recommended' },
+      { label: 'Azure Monitor workbook or dashboard planned', detail: 'The built-in AGW workbook template in Azure Monitor provides immediate visibility into throughput, latency, WAF block rates, and backend health without custom KQL queries.', tag: 'optional' },
+      { label: 'Microsoft Defender for Cloud enabled for AGW and backend resources', detail: 'CAF governance / WAF Security pillar: confirm Defender for Cloud is active in the subscription with the relevant plans enabled (Defender for App Service, Defender for Servers for VM backends). Defender surfaces security recommendations specific to AGW configuration.', tag: 'recommended' },
+      { label: 'Cost alert configured for AGW capacity unit consumption', detail: 'CAF cost management: AGW v2 billing combines a fixed hourly rate with capacity units that scale with throughput, connections, and compute. Unexpected traffic spikes can cause significant cost increases. Set a budget alert at 80% of expected monthly spend.', tag: 'recommended' }
+    ]
+  },
+  {
+    id: 'iac', cls: 's-iac', icon: 'IaC', title: 'IaC & deployment',
+    items: [
+      { label: 'SKU confirmed: Standard_v2 or WAF_v2', detail: 'Always deploy v2 — v1 SKU is retired. WAF_v2 if WAF is required, Standard_v2 otherwise. Cannot be changed post-deployment.', tag: 'required', arm: true },
+      { label: 'Autoscale min and max instance count decided', detail: 'v2 supports 0–125 instances. Set minCapacity=1 for production (0 causes cold-start latency on first request after idle). Set maxCapacity based on expected peak load and cost ceiling.', tag: 'required', arm: true },
+      { label: 'Resource naming convention confirmed', detail: 'Suggested pattern: agw-workload-env-region. Public IP: pip-agw-workload-env-region. Consistent naming simplifies log queries and alerts.', tag: 'recommended' },
+      { label: 'Bicep / Terraform module parameterised for environment promotion', detail: 'Avoid hardcoded values. Parameterise: SKU, capacity, cert Key Vault URI, backend FQDNs, subnet resource ID, public IP resource ID. Same template should deploy cleanly to dev, staging, and prod.', tag: 'bicep' },
+      { label: 'what-if / plan run against non-production first', detail: 'AGW deployments take 5–7 minutes and a failed prod deploy has immediate user impact. Validate the full template against a dev or staging environment before promoting to production.', tag: 'recommended' },
+      { label: 'CanNotDelete management lock on production resource group', detail: 'Apply a CanNotDelete lock to the AGW resource group in production. Prevents accidental deletion of the gateway, public IP, or associated resources by an operator or automation runbook.', tag: 'recommended' },
+      { label: 'Resource tags applied per organizational tagging policy', detail: 'CAF governance: all resources must carry the minimum required tags before deployment. Recommended minimum: Environment (dev/staging/prod), Workload, Owner (team or email DL), CostCenter. Tags are required for cost allocation, policy targeting, and automated operations.', tag: 'required' },
+      { label: 'IaC stored in source control with branch protection and PR review', detail: 'CAF / WAF Operational Excellence: AGW Bicep/Terraform must be in a Git repository with branch protection rules — no direct pushes to main, peer review required on all changes, and pipeline-enforced what-if validation before merge.', tag: 'recommended' },
+      { label: 'Azure Policy compliance reviewed for AGW configuration', detail: 'CAF governance: verify applicable built-in policies are assigned or exempted with documented rationale. Key policies: "Application Gateway should be deployed with WAF", "Web Application Firewall should be enabled", "Diagnostic logs in Application Gateway should be enabled".', tag: 'recommended' }
+    ]
+  }
+];
+
+const state = {};
+
+function updateProgress() {
+  let total = 0, checked = 0;
+  data.forEach(sec => sec.items.forEach(item => {
+    total++;
+    if (state[sec.id + ':' + item.label]) checked++;
+  }));
+  const pct = total ? Math.round(checked / total * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressPct').textContent = pct + '%';
+  document.getElementById('progressCount').textContent = checked + ' / ' + total;
+  document.getElementById('completeBanner').style.display = (checked === total && total > 0) ? 'block' : 'none';
+  data.forEach(sec => {
+    const el = document.querySelector('[data-id="' + sec.id + '"]');
+    if (!el) return;
+    let sc = 0;
+    sec.items.forEach(item => { if (state[sec.id + ':' + item.label]) sc++; });
+    el.querySelector('.section-count').textContent = sc + ' / ' + sec.items.length;
+  });
+}
+
+function toggleItem(secId, labelEncoded) {
+  const label = decodeURIComponent(labelEncoded);
+  const key = secId + ':' + label;
+  state[key] = !state[key];
+  const item = document.querySelector('[data-key="' + secId + '__' + labelEncoded + '"]');
+  if (item) item.classList.toggle('checked', state[key]);
+  updateProgress();
+}
+
+function tagHTML(tag) {
+  const map = { required: 'tag-required', optional: 'tag-optional', recommended: 'tag-recommended', bicep: 'tag-bicep' };
+  return '<span class="item-tag ' + (map[tag] || 'tag-optional') + '">' + tag + '</span>';
+}
+
+function escapeHTML(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function render() {
+  const container = document.getElementById('sections');
+  container.innerHTML = '';
+  data.forEach((sec, si) => {
+    const div = document.createElement('div');
+    div.className = 'section ' + sec.cls + (si === 0 ? ' open' : '');
+    div.dataset.id = sec.id;
+    const itemsHTML = sec.items.map((item, ii) => {
+      const enc = encodeURIComponent(item.label);
+      const keyAttr = sec.id + '__' + enc;
+      return '<div class="item" data-key="' + keyAttr + '" onclick="toggleItem(\'' + sec.id + '\',\'' + enc + '\')">' +
+        '<div class="checkbox"><span class="checkmark">&#10003;</span></div>' +
+        '<div class="item-content">' +
+          '<div class="item-label">' + (item.arm ? '<span class="arm-badge">&#9654; ARM</span>' : '') + escapeHTML(item.label) + '</div>' +
+          '<div class="item-detail">' + escapeHTML(item.detail) + '</div>' +
+          tagHTML(item.tag) +
+        '</div></div>' +
+        (ii < sec.items.length - 1 ? '<div class="divider"></div>' : '');
+    }).join('');
+    div.innerHTML =
+      '<div class="section-header" onclick="this.closest(\'.section\').classList.toggle(\'open\')">' +
+        '<div class="section-icon">' + sec.icon + '</div>' +
+        '<span class="section-title">' + sec.title + '</span>' +
+        '<span class="section-count">0 / ' + sec.items.length + '</span>' +
+        '<span class="section-chevron">&#9654;</span>' +
+      '</div>' +
+      '<div class="section-body">' + itemsHTML + '</div>';
+    container.appendChild(div);
+  });
+  updateProgress();
+}
+
+function expandAll()  { document.querySelectorAll('.section').forEach(s => s.classList.add('open')); }
+function collapseAll(){ document.querySelectorAll('.section').forEach(s => s.classList.remove('open')); }
+function resetAll() {
+  if (confirm('Reset all checkboxes?')) {
+    Object.keys(state).forEach(k => delete state[k]);
+    document.querySelectorAll('.item').forEach(el => el.classList.remove('checked'));
+    updateProgress();
+  }
+}
+
+render();
+</script>

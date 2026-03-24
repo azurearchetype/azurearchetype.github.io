@@ -176,6 +176,13 @@
       }
       
       /* Useful Links styling */
+      /* Override base theme's float: right on section elements */
+      .center-content section {
+        float: none !important;
+        width: auto !important;
+        padding-bottom: 0 !important;
+      }
+
       .useful-links p,
       .useful-links strong,
       .useful-links em,
@@ -365,59 +372,7 @@
       <div class="three-column-wrapper">
       
       <!-- Left Sidebar -->
-      <aside class="left-sidebar">
-        {% if site.logo %}
-          <img src="{{site.logo | relative_url}}" alt="Logo" style="max-width: 100%; height: auto;" />
-        {% endif %}
-        
-        <h1><a href="{{ "/" | absolute_url }}" style="text-decoration: none; color: #333;">{{ site.title | default: site.github.repository_name }}</a></h1>
-
-        <p style="color: #4a9eff;">{{ site.description | default: site.github.project_tagline }}</p>
-
-        <div style="margin: 20px 0;">
-          <a href="https://www.linkedin.com/in/azurearchetype" target="_blank">
-            <img src="/assets/img/LI-In-Bug.png" alt="LinkedIn" style="width:32px;height:32px;">
-          </a>&nbsp;
-
-          <a href="https://www.youtube.com/@AzureArchetype" target="_blank">
-            <img src="/assets/img/yt_logo_rgb_dark.png" alt="YouTube" style="width:128px;height:32px;">
-          </a>&nbsp;
-
-          <a href="https://github.com/azurearchetype" target="_blank">
-            <img src="/assets/img/github-mark-white.png" alt="GitHub" style="width:32px;height:32px;">
-          </a>&nbsp;
-
-          <a href="https://www.reddit.com/user/AzureArchetype/" target="_blank">
-            <img src="/assets/img/Reddit_Icon_FullColor.png" alt="Reddit" style="width:32px;height:32px;">
-          </a>&nbsp;
-        </div>
-
-        <div style="text-align: center; margin-top: 20px;">
-          <img src="/assets/img/Standard_MCT_Badge_Small.png" alt="Microsoft Certified Trainer" style="width:80px;">
-        </div>
-        
-        <hr style="border: none; border-top: 1px solid #333; margin: 20px 0;">
-        
-        <p style="color: #4a9eff; text-align: left; margin: 10px 0; font-size: 0.9em;">Sponsored by:</p>
-        
-        <div style="text-align: center;">
-          <a href="https://frametypesolutions.com" target="_blank">
-            <img src="/assets/img/frametypeLogo.png" alt="Frametype Logo" style="max-width: 75%; height: auto;">
-          </a>
-        </div>
-        
-        <p style="color: #4a9eff; text-align: center; font-style: italic; margin: 10px 0; font-size: 1em;">Productized Solutions Built Specifically for Partners</p>
-        
-        <hr style="border: none; border-top: 1px solid #333; margin: 20px 0;">
-        
-        <div style="text-align: center; margin: 15px 0;">
-          <a href="https://github.com/azurearchetype/azurearchetype.github.io/discussions" target="_blank" class="discussions-btn" style="background: #4a9eff; color: #fff; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-size: 0.9em; font-weight: 600; display: inline-block; transition: all 0.2s ease;">
-            💬 Join Discussions
-          </a>
-        </div>
-        
-        <p style="color: #ccc; text-align: center; font-size: 0.8em; margin: 10px 0;">Share ideas, ask questions, and connect with the community</p>
-      </aside>
+      {% include left-sidebar.html %}
       
       <!-- Center Content -->
       <main class="center-content">

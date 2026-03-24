@@ -9,6 +9,9 @@ theme: jekyll-theme-minimal
 collections:
   links:
     output: false
+  checklists:
+    output: true
+    permalink: /checklists/:name/
 
 # Plugins
 plugins:

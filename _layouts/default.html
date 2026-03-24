@@ -662,6 +662,36 @@
         
         <hr style="border: none; border-top: 1px solid #333; margin: 20px 0;">
         
+        <div style="text-align: center; margin: 15px 0;">
+          <a href="https://github.com/azurearchetype/azurearchetype.github.io/discussions/categories/deploynatgateway-open-forum" target="_blank" class="discussions-btn" style="background: #4a9eff !important; color: #fff !important; padding: 8px 16px; border-radius: 6px; text-decoration: none !important; font-size: 0.85em; font-weight: 600; display: inline-block !important; transition: all 0.2s ease; opacity: 1 !important; visibility: visible !important;">
+            💬 Discuss This Series
+          </a>
+        </div>
+        
+        <p style="color: #ccc; text-align: center; font-size: 0.75em; margin: 10px 0;">Join the deployNatGateway open forum</p>
+
+        <hr style="border: none; border-top: 1px solid #333; margin: 20px 0;">
+
+        <h1 style="color: #fff; text-align: center; font-size: 20px; font-weight: 700; margin: 0 0 6px 0; line-height: 1.1;"><span style="color: #f85149;">&#10004;</span> deploymentChecklists</h1>
+        <p style="color: #4a9eff; font-style: italic; font-size: 0.8em; text-align: center; margin: 0 0 12px 0;">Know before you deploy — Azure resource prerequisites</p>
+
+        {% for checklist in site.checklists %}
+        <div style="margin-bottom: 8px; text-align: left;">
+          <a href="{{ checklist.url | relative_url }}"
+             style="color: #ccc; text-decoration: none; font-size: 0.82em; display: block; padding: 7px 10px; border-radius: 4px; background: #1e2535; border: 1px solid #2a3550; transition: all 0.15s;"
+             onmouseover="this.style.color='#4a9eff';this.style.borderColor='#4a9eff'"
+             onmouseout="this.style.color='#ccc';this.style.borderColor='#2a3550'">
+            {{ checklist.resource_type | default: checklist.title }}
+          </a>
+        </div>
+        {% endfor %}
+
+        {% if site.checklists.size == 0 %}
+        <p style="color: #555; font-size: 0.8em; font-style: italic; text-align: left; margin: 0;">Coming soon...</p>
+        {% endif %}
+
+        <hr style="border: none; border-top: 1px solid #333; margin: 20px 0;">
+        
         <p class="sponsor-text" style="color: #4a9eff; text-align: left; margin: 10px 0; font-size: 0.9em;">Sponsored by:</p>
         
         <div style="text-align: center;">
@@ -671,16 +701,6 @@
         </div>
         
         <p class="sponsor-tagline" style="color: #4a9eff; text-align: center; font-style: italic; margin: 10px 0; font-size: 1em;">Productized Solutions Built Specifically for Partners</p>
-
-        <hr style="border: none; border-top: 1px solid #333; margin: 20px 0;">
-        
-        <div style="text-align: center; margin: 15px 0;">
-          <a href="https://github.com/azurearchetype/azurearchetype.github.io/discussions/categories/deploynatgateway-open-forum" target="_blank" class="discussions-btn" style="background: #4a9eff !important; color: #fff !important; padding: 8px 16px; border-radius: 6px; text-decoration: none !important; font-size: 0.85em; font-weight: 600; display: inline-block !important; transition: all 0.2s ease; opacity: 1 !important; visibility: visible !important;">
-            💬 Discuss This Series
-          </a>
-        </div>
-        
-        <p style="color: #ccc; text-align: center; font-size: 0.75em; margin: 10px 0;">Join the deployNatGateway open forum</p>
 
         {% if site.show_downloads %}
         <ul class="downloads">
