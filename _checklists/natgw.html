@@ -1,0 +1,272 @@
+---
+layout: checklist
+title: "NAT Gateway Pre-Deployment Checklist"
+subtitle: "Azure NAT Gateway — outbound internet connectivity for private VNet subnets"
+badge: "Azure Networking"
+description: |
+  A comprehensive pre-deployment checklist for Azure NAT Gateway deployment using the deployNatGateway ARM template.
+
+  This list covers networking prerequisites, NAT Gateway and public IP configuration, security and access control, monitoring and diagnostics, and IaC deployment patterns.
+
+  Work through each section to prepare your environment before associating the NAT Gateway with your VNet subnets.
+github_url: "https://github.com/azurearchetype/deployNatGateway"
+resource_type: "Azure NAT Gateway"
+---
+
+<div class="complete-banner" id="completeBanner">
+  ✅ All items checked — ready to deploy.
+</div>
+
+<div class="progress-bar-wrap">
+  <span class="progress-label">Progress</span>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <span class="progress-pct" id="progressPct">0%</span>
+  <span class="progress-label" id="progressCount">0 / 0</span>
+</div>
+
+<div class="arm-legend">
+  <span class="arm-badge">&#9654; ARM</span> Items marked <strong>ARM</strong> map to required properties in the ARM resource declaration — the portal will not submit and the ARM/Bicep template will fail validation without them.
+</div>
+
+<div class="sections" id="sections"></div>
+
+<div class="actions">
+  <button class="btn-primary" onclick="expandAll()">Expand all</button>
+  <button class="btn-ghost" onclick="collapseAll()">Collapse all</button>
+  <button class="btn-ghost" onclick="resetAll()">Reset checklist</button>
+</div>
+
+<div class="compliance-panel">
+  <h2 class="compliance-heading">Compliance alignment</h2>
+  <p class="compliance-intro">This checklist is reviewed and maintained against three Microsoft architectural frameworks. Items within each section are tagged <span class="tag tag-required">required</span>, <span class="tag tag-recommended">recommended</span>, or <span class="tag tag-optional">optional</span> based on framework guidance — with Zero Trust items typically driving the <span class="tag tag-required">required</span> bar, and Well-Architected pillar guidance informing the <span class="tag tag-recommended">recommended</span> set.</p>
+  <div class="compliance-cards">
+
+    <div class="compliance-card">
+      <div class="compliance-card-header">
+        <span class="compliance-icon caf">CAF</span>
+        <div>
+          <div class="compliance-card-title">Cloud Adoption Framework</div>
+          <div class="compliance-card-subtitle">Governance &amp; operations</div>
+        </div>
+      </div>
+      <p>Naming is applied at deployment time following the CAF pattern <strong>ng-{workload}-{env}-{region}-{index}</strong> for the NAT Gateway and <strong>pip-{workload}-{env}-{region}-{index}</strong> for the associated Public IP — the portal form provides these conventions as guidance. The deployment targets an existing VNet and is designed for hub-spoke landing zone architectures where the hub VNet is centrally managed in a separate resource group. Governance items address resource tagging (<strong>Workload</strong>, <strong>Environment</strong>, <strong>CostCenter</strong>, <strong>createdBy</strong>), CanNotDelete resource locks on production resources, and Azure Policy compliance for public IP exposure in private subnets.</p>
+    </div>
+
+    <div class="compliance-card">
+      <div class="compliance-card-header">
+        <span class="compliance-icon waf">WAF</span>
+        <div>
+          <div class="compliance-card-title">Well-Architected Framework</div>
+          <div class="compliance-card-subtitle">All five pillars</div>
+        </div>
+      </div>
+      <p><strong>Reliability:</strong> Standard SKU Public IP is zone-aware, and NAT Gateway itself is a fully managed, zone-resilient service — no VM-level public IPs or SNAT port exhaustion from overloaded load balancers. <strong>Security:</strong> outbound-only design means no inbound attack surface exposed; NSGs on associated subnets provide east-west micro-segmentation. <strong>Performance Efficiency:</strong> SNAT port capacity planning (64,512 ports per public IP) prevents port exhaustion for AKS, VMSS, and high-concurrency workloads. <strong>Cost Optimization:</strong> NAT Gateway eliminates the need for per-VM public IPs and outbound load balancer rules, with billing based on gateway hours plus data-processing charges. <strong>Operational Excellence:</strong> ARM template with UI definition enables repeatable portal deployments, and diagnostic settings capture SNAT metrics for capacity planning.</p>
+    </div>
+
+    <div class="compliance-card">
+      <div class="compliance-card-header">
+        <span class="compliance-icon zt">ZT</span>
+        <div>
+          <div class="compliance-card-title">Zero Trust</div>
+          <div class="compliance-card-subtitle">Verify, least privilege, assume breach</div>
+        </div>
+      </div>
+      <p><strong>Verify explicitly:</strong> NAT Gateway provides no inbound internet access — resources remain private with no public IP exposure. Outbound traffic flows through a controlled, single-egress point whose IP range can be allowlisted at external destinations. <strong>Least privilege:</strong> the deployment identity requires Contributor on the NAT Gateway resource group and Network Contributor on the VNet resource group — not Owner; post-deployment operations use scoped RBAC roles with no standing access. <strong>Assume breach:</strong> removing VM-level public IPs from workload subnets eliminates direct instance-level internet exposure; NSGs on all associated subnets must still enforce east-west traffic controls — NAT Gateway only handles north-south outbound egress and provides no lateral-movement protection within the VNet.</p>
+    </div>
+
+  </div>
+</div>
+
+<div class="references-panel">
+  <h2 class="references-heading">References</h2>
+  <div class="references-body">
+    <a class="ref-top-link" href="https://learn.microsoft.com/en-us/azure/nat-gateway/" target="_blank" rel="noopener">Azure NAT Gateway documentation — Microsoft Learn</a>
+    <div class="ref-groups">
+
+      <div class="ref-group">
+        <p class="ref-group-title">Architecture &amp; concepts</p>
+        <ul>
+          <li><a href="https://learn.microsoft.com/en-us/azure/nat-gateway/nat-overview" target="_blank" rel="noopener">NAT Gateway overview</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/nat-gateway/nat-gateway-resource" target="_blank" rel="noopener">NAT Gateway resource design</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/default-outbound-access" target="_blank" rel="noopener">Outbound connectivity methods compared</a></li>
+        </ul>
+      </div>
+
+      <div class="ref-group">
+        <p class="ref-group-title">Configuration &amp; deployment</p>
+        <ul>
+          <li><a href="https://learn.microsoft.com/en-us/azure/nat-gateway/quickstart-create-nat-gateway-portal" target="_blank" rel="noopener">Create NAT Gateway — portal quickstart</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/nat-gateway/nat-gateway-snat" target="_blank" rel="noopener">SNAT with NAT Gateway</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/nat-gateway/nat-overview#public-ip-addresses-and-prefixes" target="_blank" rel="noopener">Public IP addresses &amp; prefixes</a></li>
+        </ul>
+      </div>
+
+      <div class="ref-group">
+        <p class="ref-group-title">Networking integration</p>
+        <ul>
+          <li><a href="https://learn.microsoft.com/en-us/azure/nat-gateway/tutorial-nat-gateway-load-balancer-internal-portal" target="_blank" rel="noopener">NAT Gateway with internal load balancer</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/nat-gateway/nat-gateway-app-gateway" target="_blank" rel="noopener">NAT Gateway with Application Gateway</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/nat-gateway/nat-gateway-resource#limitations" target="_blank" rel="noopener">NAT Gateway limitations &amp; constraints</a></li>
+        </ul>
+      </div>
+
+      <div class="ref-group">
+        <p class="ref-group-title">Monitoring &amp; troubleshooting</p>
+        <ul>
+          <li><a href="https://learn.microsoft.com/en-us/azure/nat-gateway/nat-monitoring-metrics" target="_blank" rel="noopener">NAT Gateway metrics &amp; alerts</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/nat-gateway/troubleshoot-nat-connectivity" target="_blank" rel="noopener">Troubleshoot NAT Gateway connectivity</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/nat-gateway/troubleshoot-nat" target="_blank" rel="noopener">Diagnose SNAT port exhaustion</a></li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const data = [
+  {
+    id: 'network', cls: 's-network', icon: 'NET', title: 'Networking prerequisites',
+    items: [
+      { label: 'Virtual network exists in the target subscription and resource group', detail: 'The ARM template uses reference() to retrieve the current address prefix of each target subnet. If the VNet name or resource group is incorrect, deployment fails immediately during the reference lookup. Confirm the exact VNet name (case-sensitive) and the name of its resource group before filling in the portal form.', tag: 'required', arm: true },
+      { label: 'Target subnet names confirmed — case-sensitive match against VNet verified', detail: 'The ARM template references subnets by name to update their natGateway property. Subnet names are case-sensitive: "WebSubnet" and "websubnet" are different resources. Open the VNet in the Azure Portal, navigate to Subnets, and copy the exact subnet names before entering them into the deployment form.', tag: 'required', arm: true },
+      { label: 'Deployment region matches the VNet\'s Azure region', detail: 'A NAT Gateway can only be associated with subnets in the same Azure region. The portal location selector must match the region where the target VNet is deployed. Selecting a different region causes deployment failure during the subnet association step. Verify the VNet region under Virtual Networks → Overview → Location.', tag: 'required', arm: true },
+      { label: 'Target subnets are /28 or larger', detail: 'Azure NAT Gateway requires each associated subnet to have a minimum address space of /28 (16 addresses). Subnets smaller than /28 cannot be associated with a NAT Gateway. Check subnet sizes in the VNet address space configuration before deployment.', tag: 'required' },
+      { label: 'No existing NAT Gateway is currently associated with the target subnets', detail: 'Azure permits only one NAT Gateway per subnet. If a subnet already has a NAT Gateway association, the ARM template will overwrite it with the new resource. Confirm whether any existing NAT Gateway association should be preserved or replaced before proceeding with deployment.', tag: 'required' },
+      { label: 'Instance-level public IPs on VMs in target subnets reviewed', detail: 'Azure outbound routing precedence: instance-level public IP → NAT Gateway → load balancer outbound rules → default SNAT. A VM with its own public IP bypasses the NAT Gateway entirely for outbound connections. Remove VM-level public IPs from workload VMs if unified NAT Gateway egress is required for security posture or IP allowlisting at external destinations.', tag: 'required' },
+      { label: 'Load balancer outbound rules reviewed for target subnets', detail: 'When both a load balancer outbound rule and a NAT Gateway are associated with the same subnet, the NAT Gateway takes precedence for all resources that do not have a direct public IP. This effectively disables load balancer SNAT for those resources. Confirm this behavior is intentional before associating NAT Gateway with subnets currently relying on load balancer outbound rules.', tag: 'recommended' },
+      { label: 'GatewaySubnet and AzureFirewallSubnet excluded from the subnet list', detail: 'Adding GatewaySubnet to the NAT Gateway association creates routing conflicts with the VPN or ExpressRoute gateway. Adding AzureFirewallSubnet conflicts with Azure Firewall\'s own SNAT management. Both of these reserved subnets must be excluded from the NAT Gateway subnet association list.', tag: 'recommended' },
+      { label: 'Subnets requiring inbound internet access handled with separate resources', detail: 'NAT Gateway is strictly outbound only — it provides no inbound connectivity. Resources that need to accept inbound internet connections still require a public IP, Azure Application Gateway, Azure Load Balancer frontend, or another inbound mechanism. Associating a subnet with NAT Gateway has no effect on inbound traffic flows.', tag: 'recommended' }
+    ]
+  },
+  {
+    id: 'nat', cls: 's-gateway', icon: 'NAT', title: 'NAT Gateway & public IP',
+    items: [
+      { label: 'NAT Gateway name follows CAF naming convention', detail: 'CAF naming pattern for NAT Gateway: ng-{workload}-{env}-{region}-{index}. Example: ng-avd-prod-eus-01. The portal deployment form provides this convention as a tooltip. Resource names cannot be changed post-deployment without deleting and recreating the resource — confirm the name before submitting.', tag: 'required' },
+      { label: 'Public IP name follows CAF naming convention', detail: 'CAF naming pattern for Public IP: pip-{workload}-{env}-{region}-{index}. Example: pip-avd-prod-eus-01. The portal form pre-fills a default name using a uniqueString hash — replace it with a meaningful CAF-aligned name before deployment. The Public IP name is visible in external partner allowlists and firewall logs.', tag: 'required' },
+      { label: 'Standard SKU Static Public IP confirmed — Basic SKU is not supported', detail: 'The ARM template hard-codes "sku": { "name": "Standard" } and "publicIPAllocationMethod": "Static". Basic SKU and Dynamic allocation are not supported by NAT Gateway. Standard SKU public IPs are zone-aware — if deploying into an availability zone scenario, confirm the public IP zone configuration is consistent with the gateway placement.', tag: 'required', arm: true },
+      { label: 'SNAT port capacity planned: 64,512 ports per public IP address', detail: 'Each Standard Public IP associated with a NAT Gateway provides 64,512 SNAT ports shared across all VM instances in the associated subnet. For high-throughput workloads (AKS node pools, VMSS, Azure Functions at scale), calculate the maximum concurrent outbound connections and add additional public IPs or a public IP prefix to avoid port exhaustion. One public IP supports approximately 64K concurrent flows.', tag: 'recommended' },
+      { label: 'IP prefix vs individual public IPs decision documented', detail: 'A /28 Public IP prefix (16 contiguous IPs × 64,512 ports ≈ 1 million SNAT ports) simplifies external firewall allowlisting — configure one CIDR range instead of multiple individual addresses. Individual IPs offer more granular billing and management. IP prefix billing is per IP address per hour; evaluate operational simplicity against cost based on expected concurrent connection volume.', tag: 'recommended' },
+      { label: 'Idle TCP timeout value understood: default 4 minutes, tunable 4–120 minutes', detail: 'NAT Gateway default idle TCP timeout is 4 minutes; this is configurable to between 4 and 120 minutes post-deployment via the Azure Portal or CLI (natGateway → Configuration → TCP idle timeout). Long-lived idle connections such as database keep-alives, WebSockets, or MQTT must either use application-level heartbeats or require a longer idle timeout to prevent silent session drops.', tag: 'recommended' },
+      { label: 'NAT Gateway is outbound-only — no inbound capability confirmed in architecture', detail: 'Unlike Azure Load Balancer or Application Gateway, NAT Gateway provides no inbound connectivity whatsoever. It exclusively handles outbound Source Network Address Translation (SNAT) for private resources. Any architecture diagram or design that routes inbound traffic through NAT Gateway is incorrect and must be revised before deployment.', tag: 'required' }
+    ]
+  },
+  {
+    id: 'identity', cls: 's-identity', icon: 'IAM', title: 'Security & access control',
+    items: [
+      { label: 'Deploying identity has Contributor on the deployment resource group', detail: 'The ARM template creates the NAT Gateway and Public IP in the selected deployment resource group. The deploying identity (user, service principal, or managed identity) requires at minimum Contributor on this resource group. If the VNet is in a different resource group, Network Contributor on that resource group is also required for the subnet association updates.', tag: 'required' },
+      { label: 'vnetResourceGroup set correctly when VNet is in a different resource group', detail: 'In hub-spoke environments where the hub VNet is centrally managed in a platform or connectivity resource group, the vnetResourceGroup field in the portal form must be set to that resource group name. Leaving it empty defaults to the deployment resource group — which causes a reference lookup failure if the VNet is elsewhere. This is a common deployment failure pattern in landing zone topologies.', tag: 'required' },
+      { label: 'RBAC roles planned for ongoing NAT Gateway operations', detail: 'Network Contributor provides full access to modify NAT Gateway subnet associations, public IP configuration, and timeout settings. Reader is sufficient for monitoring-only teams. Avoid Owner unless strictly required. Define distinct roles for deployment, day-2 operations, and read-only cost/monitoring teams before go-live.', tag: 'recommended' },
+      { label: 'Private endpoint subnets — NAT Gateway interaction documented', detail: 'Private endpoint subnets associated with a NAT Gateway use NAT for internet-bound traffic only; private endpoint traffic continues to flow through private DNS and private routes unaffected. This is typically the desired behavior, but document the expected traffic flow clearly for Security and Compliance review to avoid confusion during audits.', tag: 'recommended' },
+      { label: 'Microsoft Defender for Cloud reviewed for subscription network posture', detail: 'Confirm Defender for Cloud is active in the subscription. Defender surfaces recommendations related to public IP exposure, NSG gaps, and network security baseline deviations on the subnets being associated with the NAT Gateway. Review and address any active high-severity recommendations before production deployment.', tag: 'recommended' }
+    ]
+  },
+  {
+    id: 'monitor', cls: 's-monitor', icon: 'OBS', title: 'Monitoring & diagnostics',
+    items: [
+      { label: 'Log Analytics workspace identified for NAT Gateway metrics', detail: 'Decide which Log Analytics workspace receives NAT Gateway diagnostic data. Create one if it does not exist. Reusing the hub or connectivity workspace consolidates network telemetry and simplifies cross-resource KQL queries for SNAT exhaustion correlation across multiple gateway instances.', tag: 'required' },
+      { label: 'Diagnostic settings configured on the NAT Gateway resource', detail: 'The ARM template does not deploy diagnostic settings. Configure them post-deployment via the Azure Portal (NAT Gateway → Monitoring → Diagnostic settings) or add a Microsoft.Insights/diagnosticSettings child resource to a customized deployment template. Key metrics to capture: SNAT Connection Count, Dropped Packets, NAT Gateway Throughput (bytes/sec), and Packet Count — these four metrics are the primary signals for SNAT health and capacity.', tag: 'required' },
+      { label: 'Alert defined for SNAT connection failures', detail: 'Create a metric alert on SNATConnectionCount filtered to the Failed connection state. SNAT connection failures indicate port exhaustion — workloads experience outbound connection timeouts with no descriptive error message. Alert threshold: any sustained failed connections over a 2-minute window warrants immediate investigation. Consider a second alert at 75% of available port capacity as an early warning.', tag: 'recommended' },
+      { label: 'Alert defined for dropped packets', detail: 'Alert on the DroppedPackets metric exceeding zero at steady state. Dropped packets are a leading indicator of SNAT port exhaustion or misconfigured routing and typically surface before users begin reporting connectivity problems. Set a short evaluation window (5 minutes) for rapid detection.', tag: 'recommended' },
+      { label: 'Cost alert configured for NAT Gateway data processing charges', detail: 'NAT Gateway billing has two components: ~$0.045/hour for the gateway resource (~$33/month base cost) plus $0.045 per GB of data processed. For high-throughput workloads, data processing charges can significantly exceed the base resource cost. Set a cost alert based on expected monthly data volume — particularly important for AKS clusters pulling container images or VMSS instances performing large data transfers.', tag: 'recommended' },
+      { label: 'Log retention aligned with compliance requirements', detail: 'Default Log Analytics workspace retention is 30 days. Extend to 90–365 days (or archive to a storage account) if organizational compliance requirements mandate outbound network traffic audit logs. Set via Workspace Settings → Usage and estimated costs → Data Retention.', tag: 'recommended' }
+    ]
+  },
+  {
+    id: 'iac', cls: 's-iac', icon: 'IaC', title: 'IaC & deployment',
+    items: [
+      { label: 'Resource group confirmed for NAT Gateway and Public IP', detail: 'The NAT Gateway and Public IP are created in the resource group selected in the portal deployment form. Confirm this resource group aligns with your network topology — typically the hub or connectivity resource group in a landing zone. When the VNet is in a different resource group, the NAT Gateway and Public IP land in the deployment resource group, not the VNet resource group.', tag: 'required', arm: true },
+      { label: 'VNet resource group parameter reviewed when VNet is centrally managed', detail: 'The vnetResourceGroup parameter defaults to the deployment resource group when left empty. In hub-spoke environments managed by a platform team, supply the correct hub VNet resource group name. This is one of the most common causes of deployment failure — an empty vnetResourceGroup combined with a cross-RG VNet causes the reference() lookup to fail with a not found error.', tag: 'required', arm: true },
+      { label: 'Resource tags applied to NAT Gateway and Public IP at deployment time', detail: 'CAF governance: apply Workload, Environment, CostCenter, and createdBy tags to both resources at deployment time. Tags are most reliably applied during initial deployment — post-deployment tagging via policy remediation or portal edits is operationally possible but inconsistent. The ARM template supports tags via deployment parameters or portal metadata fields if customized.', tag: 'required' },
+      { label: 'What-If validation run before production deployment', detail: 'For ARM template deployments, run az deployment group what-if or use the portal\'s built-in review step before committing. NAT Gateway deployments are fast (~2 minutes), but reverting an incorrect subnet association requires manual intervention in the portal. What-If confirms the exact subnet list, names, and resource properties before the deployment is committed.', tag: 'recommended' },
+      { label: 'CanNotDelete lock applied to NAT Gateway resource group after deployment', detail: 'CAF governance: apply a CanNotDelete management lock to the NAT Gateway resource group in production. Accidental deletion of the NAT Gateway immediately disables outbound internet access for all resources in associated subnets — a production-impacting event with no automatic failover. Locks prevent automated runbooks, pipeline mistakes, or portal misclicks from deleting the resource.', tag: 'recommended' },
+      { label: 'IaC stored in source control with branch protection and change review', detail: 'This ARM template uses the mainTemplate.json and createUiDefinition.json custom deployment pattern. Fork the repository, store subnet association customizations in version control, and apply branch protection to prevent unreviewed changes to subnet lists or public IP configurations. Any change to associated subnets immediately affects all workload outbound connectivity.', tag: 'recommended' },
+      { label: 'Re-deployment subnet reduction behavior understood', detail: 'The ARM template is conditionally idempotent: re-deploying with the same parameters updates existing subnet associations and NAT Gateway properties in-place. However, reducing the subnet list on re-deployment does NOT automatically remove the NAT Gateway association from subnets no longer in the parameters list — those subnets must be manually disassociated via the portal or a separate ARM/CLI operation.', tag: 'recommended' }
+    ]
+  }
+];
+
+const state = {};
+
+function updateProgress() {
+  let total = 0, checked = 0;
+  data.forEach(sec => sec.items.forEach(item => {
+    total++;
+    if (state[sec.id + ':' + item.label]) checked++;
+  }));
+  const pct = total ? Math.round(checked / total * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressPct').textContent = pct + '%';
+  document.getElementById('progressCount').textContent = checked + ' / ' + total;
+  document.getElementById('completeBanner').style.display = (checked === total && total > 0) ? 'block' : 'none';
+  data.forEach(sec => {
+    const el = document.querySelector('[data-id="' + sec.id + '"]');
+    if (!el) return;
+    let sc = 0;
+    sec.items.forEach(item => { if (state[sec.id + ':' + item.label]) sc++; });
+    el.querySelector('.section-count').textContent = sc + ' / ' + sec.items.length;
+  });
+}
+
+function toggleItem(secId, labelEncoded) {
+  const label = decodeURIComponent(labelEncoded);
+  const key = secId + ':' + label;
+  state[key] = !state[key];
+  const item = document.querySelector('[data-key="' + secId + '__' + labelEncoded + '"]');
+  if (item) item.classList.toggle('checked', state[key]);
+  updateProgress();
+}
+
+function tagHTML(tag) {
+  const map = { required: 'tag-required', optional: 'tag-optional', recommended: 'tag-recommended', bicep: 'tag-bicep' };
+  return '<span class="item-tag ' + (map[tag] || 'tag-optional') + '">' + tag + '</span>';
+}
+
+function escapeHTML(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function render() {
+  const container = document.getElementById('sections');
+  container.innerHTML = '';
+  data.forEach((sec, si) => {
+    const div = document.createElement('div');
+    div.className = 'section ' + sec.cls + (si === 0 ? ' open' : '');
+    div.dataset.id = sec.id;
+    const itemsHTML = sec.items.map((item, ii) => {
+      const enc = encodeURIComponent(item.label);
+      const keyAttr = sec.id + '__' + enc;
+      return '<div class="item" data-key="' + keyAttr + '" onclick="toggleItem(\'' + sec.id + '\',\'' + enc + '\')">' +
+        '<div class="checkbox"><span class="checkmark">&#10003;</span></div>' +
+        '<div class="item-content">' +
+          '<div class="item-label">' + (item.arm ? '<span class="arm-badge">&#9654; ARM</span>' : '') + escapeHTML(item.label) + '</div>' +
+          '<div class="item-detail">' + escapeHTML(item.detail) + '</div>' +
+          tagHTML(item.tag) +
+        '</div></div>' +
+        (ii < sec.items.length - 1 ? '<div class="divider"></div>' : '');
+    }).join('');
+    div.innerHTML =
+      '<div class="section-header" onclick="this.closest(\'.section\').classList.toggle(\'open\')">' +
+        '<div class="section-icon">' + sec.icon + '</div>' +
+        '<span class="section-title">' + sec.title + '</span>' +
+        '<span class="section-count">0 / ' + sec.items.length + '</span>' +
+        '<span class="section-chevron">&#9654;</span>' +
+      '</div>' +
+      '<div class="section-body">' + itemsHTML + '</div>';
+    container.appendChild(div);
+  });
+  updateProgress();
+}
+
+function expandAll()  { document.querySelectorAll('.section').forEach(s => s.classList.add('open')); }
+function collapseAll(){ document.querySelectorAll('.section').forEach(s => s.classList.remove('open')); }
+function resetAll() {
+  if (confirm('Reset all checkboxes?')) {
+    Object.keys(state).forEach(k => delete state[k]);
+    document.querySelectorAll('.item').forEach(el => el.classList.remove('checked'));
+    updateProgress();
+  }
+}
+
+render();
+</script>

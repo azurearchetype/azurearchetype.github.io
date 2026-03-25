@@ -1,0 +1,299 @@
+---
+layout: checklist
+title: "VPN Gateway Pre-Deployment Checklist"
+subtitle: "Azure VPN Gateway P2S — Entra ID authenticated, all prerequisites and configuration decisions"
+badge: "Azure Networking"
+description: |
+  A comprehensive pre-deployment checklist for Azure VPN Gateway Point-to-Site (P2S) deployment using Entra ID authentication.
+
+  This list covers networking prerequisites, identity & access, Entra ID authentication, gateway configuration, P2S client setup, monitoring & diagnostics, and IaC deployment patterns.
+
+  Work through each section to prepare for your resource deployment.
+github_url: "https://github.com/azurearchetype/deployVpnGateway"
+resource_type: "Azure VPN Gateway"
+---
+
+<div class="complete-banner" id="completeBanner">
+  ✅ All items checked — ready to deploy.
+</div>
+
+<div class="progress-bar-wrap">
+  <span class="progress-label">Progress</span>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <span class="progress-pct" id="progressPct">0%</span>
+  <span class="progress-label" id="progressCount">0 / 0</span>
+</div>
+
+<div class="arm-legend">
+  <span class="arm-badge">&#9654; ARM</span> Items marked <strong>ARM</strong> map to required properties in the ARM resource declaration — the portal will not submit and the ARM/Bicep template will fail validation without them.
+</div>
+
+<div class="sections" id="sections"></div>
+
+<div class="actions">
+  <button class="btn-primary" onclick="expandAll()">Expand all</button>
+  <button class="btn-ghost" onclick="collapseAll()">Collapse all</button>
+  <button class="btn-ghost" onclick="resetAll()">Reset checklist</button>
+</div>
+
+<div class="compliance-panel">
+  <h2 class="compliance-heading">Compliance alignment</h2>
+  <p class="compliance-intro">This checklist is reviewed and maintained against three Microsoft architectural frameworks. Items within each section are tagged <span class="tag tag-required">required</span>, <span class="tag tag-recommended">recommended</span>, or <span class="tag tag-optional">optional</span> based on framework guidance — with Zero Trust items typically driving the <span class="tag tag-required">required</span> bar, and Well-Architected pillar guidance informing the <span class="tag tag-recommended">recommended</span> set.</p>
+  <div class="compliance-cards">
+
+    <div class="compliance-card">
+      <div class="compliance-card-header">
+        <span class="compliance-icon caf">CAF</span>
+        <div>
+          <div class="compliance-card-title">Cloud Adoption Framework</div>
+          <div class="compliance-card-subtitle">Governance &amp; operations</div>
+        </div>
+      </div>
+      <p>Naming and tagging are applied consistently at deployment time: all resources follow the CAF pattern <strong>{type}-{workload}-{env}-{locationAbbr}-{namingIndex}</strong>, with <strong>Workload</strong>, <strong>Environment</strong>, and <strong>createdBy</strong> tags applied automatically. The deployment is designed for hub VNet integration and supports CAF landing zone architectures. Governance items address resource locks, Azure Policy compliance, and the additional CAF-recommended tags — <strong>CostCenter</strong>, <strong>DataClassification</strong>, <strong>BusinessUnit</strong>, and <strong>ServiceClass</strong> — that must be supplied via the <strong>-Tags</strong> parameter before deployment.</p>
+    </div>
+
+    <div class="compliance-card">
+      <div class="compliance-card-header">
+        <span class="compliance-icon waf">WAF</span>
+        <div>
+          <div class="compliance-card-title">Well-Architected Framework</div>
+          <div class="compliance-card-subtitle">All five pillars</div>
+        </div>
+      </div>
+      <p><strong>Reliability:</strong> zone-redundant AZ SKU selection, active-active mode evaluation, and Standard Static Public IP for predictable addressing. <strong>Security:</strong> Entra ID as the sole authentication mechanism, group-based access control, and Conditional Access policy as the critical post-deployment security item. <strong>Performance Efficiency:</strong> SKU selection based on concurrent connection count (250–1000) and Generation2 hardware for maximum throughput. <strong>Cost Optimization:</strong> SKU cost guidance (~$140–$530/month range) and budget alerting. <strong>Operational Excellence:</strong> full IaC with idempotent deployment, what-if validation, and timestamped deployment names.</p>
+    </div>
+
+    <div class="compliance-card">
+      <div class="compliance-card-header">
+        <span class="compliance-icon zt">ZT</span>
+        <div>
+          <div class="compliance-card-title">Zero Trust</div>
+          <div class="compliance-card-subtitle">Verify, least privilege, assume breach</div>
+        </div>
+      </div>
+      <p><strong>Verify explicitly:</strong> all P2S connections require Entra ID authentication — no certificates or shared keys distributed to clients. Group-based access with <strong>Assignment required</strong> enforced denies unenrolled users at the app layer. A Conditional Access policy requiring MFA and device compliance is the single most critical gap to address before production go-live. <strong>Least privilege:</strong> VPN access is scoped to a named security group, no standing credentials distributed, and PIM/JIT for operational teams. <strong>Assume breach:</strong> NSGs on workload subnets prevent lateral movement from connected VPN clients, and diagnostic logging to Log Analytics is required for connection auditing.</p>
+    </div>
+
+  </div>
+</div>
+
+<div class="references-panel">
+  <h2 class="references-heading">References</h2>
+  <div class="references-body">
+    <a class="ref-top-link" href="https://learn.microsoft.com/en-us/azure/vpn-gateway/" target="_blank" rel="noopener">Azure VPN Gateway documentation — Microsoft Learn</a>
+    <div class="ref-groups">
+
+      <div class="ref-group">
+        <p class="ref-group-title">Architecture &amp; concepts</p>
+        <ul>
+          <li><a href="https://learn.microsoft.com/en-us/azure/vpn-gateway/point-to-site-about" target="_blank" rel="noopener">About P2S VPN</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-about-vpn-gateway-settings" target="_blank" rel="noopener">Gateway SKU &amp; settings</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-about-vpngateways" target="_blank" rel="noopener">VPN Gateway overview</a></li>
+        </ul>
+      </div>
+
+      <div class="ref-group">
+        <p class="ref-group-title">Entra ID authentication</p>
+        <ul>
+          <li><a href="https://learn.microsoft.com/en-us/azure/vpn-gateway/openvpn-azure-ad-tenant" target="_blank" rel="noopener">P2S with Entra ID auth</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/vpn-gateway/openvpn-azure-ad-mfa" target="_blank" rel="noopener">Conditional Access &amp; MFA for VPN</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/vpn-gateway/point-to-site-entra-gateway" target="_blank" rel="noopener">Configure P2S Entra ID auth</a></li>
+        </ul>
+      </div>
+
+      <div class="ref-group">
+        <p class="ref-group-title">Networking</p>
+        <ul>
+          <li><a href="https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-vpn-faq#what-are-the-requirements-for-a-gateway-subnet" target="_blank" rel="noopener">GatewaySubnet requirements</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-about-point-to-site-routing" target="_blank" rel="noopener">P2S routing &amp; split tunnel</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-forced-tunneling-rm" target="_blank" rel="noopener">Force tunneling configuration</a></li>
+        </ul>
+      </div>
+
+      <div class="ref-group">
+        <p class="ref-group-title">Monitoring &amp; operations</p>
+        <ul>
+          <li><a href="https://learn.microsoft.com/en-us/azure/vpn-gateway/monitor-vpn-gateway" target="_blank" rel="noopener">Monitor VPN Gateway</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-howto-setup-alerts-virtual-network-gateway-log" target="_blank" rel="noopener">Diagnostic logs &amp; alerts</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/vpn-gateway/reset-gateway" target="_blank" rel="noopener">Troubleshoot &amp; reset gateway</a></li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const data = [
+  {
+    id: 'network', cls: 's-network', icon: 'NET', title: 'Networking prerequisites',
+    items: [
+      { label: 'Virtual network exists in the target region', detail: 'VPN Gateway must be deployed into an existing VNet. The VNet can be new (created by deploy.ps1) or an existing hub VNet. A VPN Gateway cannot be deployed standalone without a VNet.', tag: 'required', arm: true },
+      { label: 'GatewaySubnet provisioned at /27 or larger', detail: 'Azure requires a subnet named exactly "GatewaySubnet" — no other name is accepted. Minimum /27 (32 addresses). /26 is recommended for active-active configurations or future scaling. No other resources may reside in this subnet alongside the gateway.', tag: 'required', arm: true },
+      { label: 'No existing VPN gateway on the GatewaySubnet', detail: 'Azure supports only one VPN gateway per GatewaySubnet. Attempting to deploy into a VNet that already has a gateway will fail. deploy.ps1 checks for this condition and blocks deployment if an existing gateway is detected.', tag: 'required' },
+      { label: 'Standard SKU Static Public IP provisioned', detail: 'VPN Gateway requires a Standard SKU Public IP with Static allocation. Basic SKU is not supported. For zone-redundant AZ SKU deployments, the Public IP must also be zone-redundant.', tag: 'required', arm: true },
+      { label: 'P2S client address pool CIDR confirmed with no overlaps', detail: 'The client address pool (default 172.16.201.0/24) is assigned to connecting VPN clients. It must not overlap with the VNet address space, on-premises IP ranges, or any peered network CIDR. Clients each receive one IP from this pool for the duration of their session.', tag: 'required', arm: true },
+      { label: 'On-premises and peered VNet IP ranges documented', detail: 'Know all IP ranges reachable from the VNet (on-premises, peered VNets, hub-spoke spokes). These ranges are pushed to VPN clients as split-tunnel routes. An overlapping client pool CIDR causes routing failures that are difficult to diagnose post-deployment.', tag: 'recommended' },
+      { label: 'Hub VNet integration reviewed if attaching to existing VNet', detail: 'When deploying into an existing hub VNet, confirm the GatewaySubnet CIDR does not conflict with existing subnets. deploy.ps1 auto-calculates the topmost available /27 within the VNet address space when GatewaySubnetPrefix is not provided — review the calculated value before accepting.', tag: 'recommended' },
+      { label: 'NSGs on workload subnets planned for VPN client micro-segmentation', detail: 'Zero Trust — assume breach: once connected, P2S VPN clients can reach all VNet subnets by default. Apply NSGs to all workload subnets to restrict lateral movement from VPN clients. VPN connectivity does not implicitly grant trust to all VNet resources — segmentation must be explicit.', tag: 'required' },
+      { label: 'DDoS Network Protection evaluated for the hub VNet', detail: 'CAF/WAF Security: if this is or will become the hub VNet with a public-facing gateway, evaluate enabling Azure DDoS Network Protection on the VNet. DDoS Basic (default) provides limited volumetric protection only.', tag: 'recommended' }
+    ]
+  },
+  {
+    id: 'identity', cls: 's-identity', icon: 'IAM', title: 'Identity & access',
+    items: [
+      { label: 'Target subscription and resource group confirmed', detail: 'Confirm which subscription and resource group the gateway lands in. When using an existing VNet, Azure requires the gateway to reside in the same resource group as the VNet — deploy.ps1 validates and enforces this automatically, overriding a conflicting -ResourceGroupName with a warning.', tag: 'required' },
+      { label: 'Deploying principal has Contributor on the resource group', detail: 'The account or service principal running deploy.ps1 requires at minimum Contributor on the resource group. Owner is needed if assigning RBAC roles post-deployment.', tag: 'required' },
+      { label: 'Entra ID permissions confirmed for group and app management', detail: 'deploy.ps1 requires Group.ReadWrite.All (or Group.Read.All for existing groups), Application.Read.All, and AppRoleAssignment.ReadWrite.All to create the security group, read the enterprise application, create the app role assignment, and set the "Assignment required" flag post-deployment.', tag: 'required' },
+      { label: 'RBAC roles planned for ongoing gateway operations', detail: 'Who modifies the gateway post-deployment? Network Contributor covers gateway configuration changes. Reader is sufficient for monitoring-only teams. Avoid Owner unless strictly required. Document all role assignments in your RBAC runbook.', tag: 'recommended' },
+      { label: 'PIM / JIT access configured for operational teams', detail: 'Zero Trust — least privilege: no standing Contributor or higher on the gateway resource group for operations teams. Use Privileged Identity Management (PIM) with time-bound, approval-gated elevation for all configuration changes.', tag: 'recommended' },
+      { label: 'Deployment pipeline uses scoped service principal, not user credentials', detail: 'Zero Trust / CAF: CI/CD pipelines must authenticate with a service principal (or workload identity federation) scoped to the minimum required RBAC role. Interactive user credentials must never be embedded in pipelines or stored in deployment scripts.', tag: 'recommended' }
+    ]
+  },
+  {
+    id: 'entra', cls: 's-entra', icon: 'AAD', title: 'Entra ID authentication',
+    items: [
+      { label: 'Entra ID tenant GUID confirmed', detail: 'The tenant GUID is required to construct the aadTenant URL (https://login.microsoftonline.com/{tenantId}/) and aadIssuer URL (https://sts.windows.net/{tenantId}/) in the Bicep template. Confirm the correct tenant GUID — cross-tenant deployments pass this via the -TenantId parameter.', tag: 'required', arm: true },
+      { label: 'Entra ID security group created or identified', detail: 'A security group (SecurityEnabled: true, MailEnabled: false) must exist or be created by deploy.ps1 using -VpnGroupName and -CreateNewGroup. If using an existing group, it must already exist before the post-deployment assignment step runs.', tag: 'required' },
+      { label: 'Azure VPN enterprise application present in the tenant', detail: 'The Azure VPN enterprise application (app ID: 41b23e61-6c1e-4545-b367-cd054e0ed4b4) must be visible under Entra ID → Enterprise Applications. It is normally auto-provisioned on first P2S configuration in the tenant. Verify its presence before deployment — deploy.ps1 will fail the assignment step if it cannot locate the service principal.', tag: 'required' },
+      { label: '"Assignment required" to be enabled on the enterprise application', detail: 'Zero Trust — verify explicitly: deploy.ps1 sets AppRoleAssignmentRequired: true on the Azure VPN service principal post-deployment. This ensures only explicitly assigned groups — not all Entra ID users — can authenticate. Do not skip or revert this setting in production.', tag: 'required' },
+      { label: 'OpenVPN confirmed as the P2S protocol (required for Entra ID auth)', detail: 'Entra ID authentication is only supported with the OpenVPN protocol. IKEv2 and SSTP do not support AAD/Entra ID auth. This is baked into the Bicep template. Confirm that end-users can install the Azure VPN Client — the built-in Windows VPN client does not support Entra ID P2S connections.', tag: 'required', arm: true },
+      { label: 'Conditional Access policy planned targeting the Azure VPN application', detail: 'CRITICAL Zero Trust gap: without a Conditional Access policy scoped to app 41b23e61-6c1e-4545-b367-cd054e0ed4b4, group members can connect without MFA and from non-compliant devices. Create a CA policy requiring MFA (and ideally Intune device compliance) before production go-live. Requires Entra ID P1 or P2 licensing.', tag: 'required' },
+      { label: 'Entra ID P1 or P2 license confirmed for Conditional Access', detail: 'Conditional Access policies require Entra ID P1 (for MFA-based access) or P2 (for risk-based and identity-protection policies). Confirm the licensed SKU is available for all VPN users before attempting to create the CA policy.', tag: 'recommended' },
+      { label: 'Direct group membership confirmed — nested groups not supported', detail: 'Azure VPN app role assignments do not propagate through nested group membership. Each VPN user must be a direct member of the assigned security group. Nested groups cause silent authentication failures — users appear to have access but cannot connect, and the error is not descriptive.', tag: 'required' }
+    ]
+  },
+  {
+    id: 'gateway', cls: 's-gateway', icon: 'GW', title: 'Gateway configuration',
+    items: [
+      { label: 'Gateway SKU selected based on concurrent connection requirements', detail: 'VpnGw1/VpnGw2/VpnGw3 support 250/500/1000 concurrent P2S connections respectively. AZ variants (VpnGw1AZ, VpnGw2AZ, VpnGw3AZ) add zone redundancy. The SKU cannot be changed between Generation1 and Generation2 after deployment — a full redeployment is required.', tag: 'required', arm: true },
+      { label: 'Gateway generation confirmed and matched to SKU', detail: 'Generation1 is required for VpnGw1/VpnGw1AZ. Generation2 is required for VpnGw2/VpnGw3 and all AZ variants. VpnGw2 (Generation2) is the recommended default starting point. Generation cannot be changed after deployment.', tag: 'required', arm: true },
+      { label: 'Zone-redundant AZ SKU selected for production workloads', detail: 'WAF Reliability: use VpnGw2AZ or higher for any production deployment with an availability SLA. AZ SKUs distribute gateway instances across availability zones, protecting against zone-level failures. Approximately $100/month premium over the non-AZ equivalent SKU.', tag: 'recommended' },
+      { label: 'Active-Active mode decision documented', detail: 'Active-Active requires a second Public IP and doubles P2S capacity. Microsoft recommends active-active mode for production P2S gateways. The current Bicep template deploys in active-standby mode (activeActive: false). Plan a Bicep enhancement if your production availability SLA requires it.', tag: 'recommended' },
+      { label: 'VPN type confirmed as RouteBased', detail: 'P2S VPN and the OpenVPN protocol require RouteBased VPN type — PolicyBased is not supported for P2S. This is baked into the Bicep template. Confirm the parameter is not overridden. RouteBased is also required for any future site-to-site gateway expansion.', tag: 'required' },
+      { label: 'Subscription core quota verified in target region', detail: 'Confirm the subscription has sufficient VPN Gateway quota in the target Azure region. Gateway deployments fail on quota exhaustion with an unhelpful error. Check current usage in: Azure Portal → Subscriptions → Usage + quotas → filter by Virtual Network Gateways.', tag: 'recommended' },
+      { label: 'Deployment time budgeted at 25–45 minutes', detail: 'VPN Gateway provisioning takes 25–45 minutes. Plan for this in deployment windows, CI/CD pipeline timeouts, and maintenance schedules. A failed deployment requires full deletion and redeployment — GatewaySubnet CIDR conflicts and quota limits are the most common failure causes.', tag: 'optional' }
+    ]
+  },
+  {
+    id: 'p2s', cls: 's-p2s', icon: 'P2S', title: 'P2S & client configuration',
+    items: [
+      { label: 'Azure VPN Client can be deployed to user workstations', detail: 'Entra ID P2S authentication requires the Azure VPN Client application — the built-in Windows VPN client does not support Entra ID auth. Confirm IT can distribute and install it on all user workstations. Download: aka.ms/azvpnclientdownload. Supports Windows, macOS, and Linux.', tag: 'required' },
+      { label: 'VPN client profile distribution process defined', detail: 'After deployment, users need the VPN client profile XML downloaded from: VPN Gateway → Point-to-site configuration → Download VPN client. Define the distribution method: manual share, Intune app deployment, or a post-deploy script using Get-AzVpnClientConfiguration. The profile must be re-distributed to all users after any gateway configuration change.', tag: 'required' },
+      { label: 'Split tunnel vs force tunnel decision confirmed', detail: 'P2S operates in split-tunnel mode by default — only Azure VNet CIDRs route through the tunnel; internet traffic goes directly from the client. For strict Zero Trust posture requiring full egress inspection, force tunneling routes all 0.0.0.0/0 client traffic through Azure Firewall or an NVA. Force tunneling requires additional UDR configuration not included in this template.', tag: 'required' },
+      { label: 'Force tunnel architecture scoped if required', detail: 'Zero Trust — assume breach: if force tunneling is required, design the UDR configuration, Azure Firewall policy (or NVA routing), and client route distribution before deployment. Adding force tunneling post-deployment requires gateway reconfiguration and client profile re-download by all users.', tag: 'optional' },
+      { label: 'User acceptance test plan defined including access-denied scenario', detail: 'Validation must include two tests: a user in the VPN group successfully connects and reaches Azure VNet resources, and a user not in the group receives an authentication error. The second test validates that both "Assignment required" and group membership controls are correctly enforced end-to-end.', tag: 'recommended' },
+      { label: 'Client profile re-download procedure documented for operations', detail: 'Any gateway configuration change (SKU resize, protocol change, AAD URL update, address pool change) invalidates existing client VPN profiles. All users must re-download and re-import the profile. Document this procedure and communicate it to the helpdesk before making any post-deployment configuration changes.', tag: 'recommended' }
+    ]
+  },
+  {
+    id: 'monitor', cls: 's-monitor', icon: 'OBS', title: 'Monitoring & diagnostics',
+    items: [
+      { label: 'Log Analytics workspace identified', detail: 'Decide which workspace receives gateway diagnostic logs. Create one if it does not exist. Reusing the same workspace as other hub network resources simplifies cross-resource correlation queries and reduces workspace management overhead.', tag: 'required' },
+      { label: 'Diagnostic settings configured for gateway logs and metrics', detail: 'CRITICAL gap from the repo: the Bicep template does not deploy diagnostic settings. Add a Microsoft.Insights/diagnosticSettings resource to main.bicep. Key log categories: GatewayDiagnosticLog (P2S connection events), TunnelDiagnosticLog, RouteDiagnosticLog, IKEDiagnosticLog, and P2SDiagnosticLog. Required for Zero Trust connection auditing.', tag: 'required' },
+      { label: 'Alert defined: P2S connection authentication failures', detail: 'Query GatewayDiagnosticLog for failed connection attempts. Spikes in authentication failures may indicate brute-force attempts, expired CA policies, group membership issues, or stale client profiles. Set the alert threshold relative to expected daily connection volume.', tag: 'recommended' },
+      { label: 'Alert defined: VPN gateway health degraded', detail: 'Alert on VPN Gateway Health metric dropping below 1. A gateway in degraded state silently fails new connection attempts while existing tunnels may remain up — making detection without alerting very difficult. This is the single most operationally impactful metric to monitor.', tag: 'recommended' },
+      { label: 'Microsoft Defender for Cloud enabled for the subscription', detail: 'CAF/WAF Security: confirm Defender for Cloud is active in the subscription. Defender surfaces security recommendations specific to network gateway configuration and Entra ID integration gaps.', tag: 'recommended' },
+      { label: 'Cost alert configured for gateway SKU billing', detail: 'CAF cost management: VPN Gateway billing is a flat hourly rate based on SKU (~$140–$530/month depending on SKU and region). Set a budget alert to detect unexpected SKU changes or duplicate gateways inadvertently created by failed and redeployed pipelines.', tag: 'recommended' },
+      { label: 'Log retention period aligned with compliance requirements', detail: 'CAF governance: Log Analytics workspace retention must meet organizational compliance requirements — typically 90–365 days for network access audit logs. Default workspace retention is 30 days. Extend via workspace Settings → Usage and estimated costs → Data Retention, or archive to a storage account for long-term compliance.', tag: 'recommended' }
+    ]
+  },
+  {
+    id: 'iac', cls: 's-iac', icon: 'IaC', title: 'IaC & deployment',
+    items: [
+      { label: 'main.bicepparam reviewed and updated before first deployment', detail: 'The parameter file contains defaults that must be reviewed before production deployment: GatewaySku (default VpnGw2), VpnGatewayGeneration (Generation2), VpnClientAddressPoolPrefix (172.16.201.0/24), and VnetAddressPrefix (10.0.0.0/16 for new VNets). Azure does not support resource renaming after deployment.', tag: 'required', arm: true },
+      { label: 'Resource naming convention confirmed before first deployment', detail: 'CAF pattern: {type}-{workload}-{env}-{locationAbbr}-{namingIndex}. Examples: vgw-vpn-prod-eus-01, pip-vpn-prod-eus-01, vnet-vpn-prod-eus-01. Confirm -Workload, -Environment, -Location, and -NamingIndex parameter values before deployment — names cannot be changed post-deployment without full resource recreation.', tag: 'required' },
+      { label: 'Resource tags applied per organizational tagging policy', detail: 'CAF governance: Workload, Environment, and createdBy tags are applied automatically by deploy.ps1. Add required organizational tags (CostCenter, DataClassification, BusinessUnit, ServiceClass) via the -Tags parameter before deployment. Tags are required for cost allocation, policy targeting, and automated operations.', tag: 'required' },
+      { label: 'What-If run against non-production environment first', detail: 'VPN Gateway deployments take 25–45 minutes and a failed production deployment causes immediate connectivity impact for all VPN users. Run deploy.ps1 with -WhatIf against a dev or staging environment to validate the full template and parameter values before promoting to production.', tag: 'recommended' },
+      { label: 'CanNotDelete management lock on production resource group', detail: 'CAF governance: apply a CanNotDelete lock to the gateway resource group in production. Prevents accidental deletion of the gateway, public IP, or VNet by an operator or automation runbook — any of which immediately severs all active VPN connections for every user.', tag: 'recommended' },
+      { label: 'IaC stored in source control with branch protection and PR review', detail: 'CAF / WAF Operational Excellence: Bicep templates and deploy.ps1 must be in a Git repository with branch protection rules — no direct pushes to main, peer review required on all changes, and pipeline-enforced what-if validation before merge.', tag: 'recommended' },
+      { label: 'Azure Policy compliance reviewed for VPN Gateway configuration', detail: 'CAF governance: verify applicable built-in policies are assigned or exempted with documented rationale. Key policy: "VPN gateways should use only Azure Active Directory (AAD) authentication for point-to-site connections". Review allowed SKU and region restriction policies for your environment.', tag: 'recommended' },
+      { label: 'Deployment idempotency confirmed — safe to re-run', detail: 'deploy.ps1 is designed to be idempotent and safe to re-run. The Entra ID group assignment step is conflict-tolerant and will not duplicate assignments. Validate idempotency by running with -WhatIf in non-production before relying on re-runs for production configuration updates.', tag: 'recommended' }
+    ]
+  }
+];
+
+const state = {};
+
+function updateProgress() {
+  let total = 0, checked = 0;
+  data.forEach(sec => sec.items.forEach(item => {
+    total++;
+    if (state[sec.id + ':' + item.label]) checked++;
+  }));
+  const pct = total ? Math.round(checked / total * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressPct').textContent = pct + '%';
+  document.getElementById('progressCount').textContent = checked + ' / ' + total;
+  document.getElementById('completeBanner').style.display = (checked === total && total > 0) ? 'block' : 'none';
+  data.forEach(sec => {
+    const el = document.querySelector('[data-id="' + sec.id + '"]');
+    if (!el) return;
+    let sc = 0;
+    sec.items.forEach(item => { if (state[sec.id + ':' + item.label]) sc++; });
+    el.querySelector('.section-count').textContent = sc + ' / ' + sec.items.length;
+  });
+}
+
+function toggleItem(secId, labelEncoded) {
+  const label = decodeURIComponent(labelEncoded);
+  const key = secId + ':' + label;
+  state[key] = !state[key];
+  const item = document.querySelector('[data-key="' + secId + '__' + labelEncoded + '"]');
+  if (item) item.classList.toggle('checked', state[key]);
+  updateProgress();
+}
+
+function tagHTML(tag) {
+  const map = { required: 'tag-required', optional: 'tag-optional', recommended: 'tag-recommended', bicep: 'tag-bicep' };
+  return '<span class="item-tag ' + (map[tag] || 'tag-optional') + '">' + tag + '</span>';
+}
+
+function escapeHTML(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function render() {
+  const container = document.getElementById('sections');
+  container.innerHTML = '';
+  data.forEach((sec, si) => {
+    const div = document.createElement('div');
+    div.className = 'section ' + sec.cls + (si === 0 ? ' open' : '');
+    div.dataset.id = sec.id;
+    const itemsHTML = sec.items.map((item, ii) => {
+      const enc = encodeURIComponent(item.label);
+      const keyAttr = sec.id + '__' + enc;
+      return '<div class="item" data-key="' + keyAttr + '" onclick="toggleItem(\'' + sec.id + '\',\'' + enc + '\')">' +
+        '<div class="checkbox"><span class="checkmark">&#10003;</span></div>' +
+        '<div class="item-content">' +
+          '<div class="item-label">' + (item.arm ? '<span class="arm-badge">&#9654; ARM</span>' : '') + escapeHTML(item.label) + '</div>' +
+          '<div class="item-detail">' + escapeHTML(item.detail) + '</div>' +
+          tagHTML(item.tag) +
+        '</div></div>' +
+        (ii < sec.items.length - 1 ? '<div class="divider"></div>' : '');
+    }).join('');
+    div.innerHTML =
+      '<div class="section-header" onclick="this.closest(\'.section\').classList.toggle(\'open\')">' +
+        '<div class="section-icon">' + sec.icon + '</div>' +
+        '<span class="section-title">' + sec.title + '</span>' +
+        '<span class="section-count">0 / ' + sec.items.length + '</span>' +
+        '<span class="section-chevron">&#9654;</span>' +
+      '</div>' +
+      '<div class="section-body">' + itemsHTML + '</div>';
+    container.appendChild(div);
+  });
+  updateProgress();
+}
+
+function expandAll()  { document.querySelectorAll('.section').forEach(s => s.classList.add('open')); }
+function collapseAll(){ document.querySelectorAll('.section').forEach(s => s.classList.remove('open')); }
+function resetAll() {
+  if (confirm('Reset all checkboxes?')) {
+    Object.keys(state).forEach(k => delete state[k]);
+    document.querySelectorAll('.item').forEach(el => el.classList.remove('checked'));
+    updateProgress();
+  }
+}
+
+render();
+</script>
