@@ -45,12 +45,13 @@
   <p style="color: #4a9eff; font-style: italic; font-size: 0.8em; text-align: center; margin: 0 0 12px 0;">Know before you deploy — Azure resource prerequisites</p>
 
   {% for checklist in site.checklists %}
-  <div style="margin-bottom: 8px; text-align: left;">
+  <div style="margin-bottom: 8px;">
     <a href="{{ checklist.url | relative_url }}"
-       style="color: #ccc; text-decoration: none; font-size: 0.82em; display: block; padding: 7px 10px; border-radius: 4px; background: #1e2535; border: 1px solid #2a3550; transition: all 0.15s; text-align: center;"
+       style="color: #ccc; text-decoration: none; font-size: 0.82em; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 7px 10px; border-radius: 4px; background: #1e2535; border: 1px solid #2a3550; transition: all 0.15s;"
        onmouseover="this.style.color='#4a9eff';this.style.borderColor='#4a9eff'"
        onmouseout="this.style.color='#ccc';this.style.borderColor='#2a3550'">
-      {{ checklist.nav_label | default: checklist.resource_type | default: checklist.title }}
+      {% if checklist.resource_icon %}<img src="{{ checklist.resource_icon }}" alt="" style="width:18px;height:18px;flex-shrink:0;">{% endif %}
+      <span>{{ checklist.nav_label | default: checklist.resource_type | default: checklist.title }}</span>
     </a>
   </div>
   {% endfor %}
