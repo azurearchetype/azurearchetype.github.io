@@ -166,6 +166,28 @@
         font-weight: normal !important;
       }
 
+      .marketplace-link-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #0c1a2e;
+        color: #60a5fa !important;
+        border: 1px solid #0078d4;
+        padding: 8px 16px;
+        border-radius: 6px;
+        text-decoration: none !important;
+        font-size: 0.85em;
+        font-family: ui-monospace, 'Cascadia Code', 'Consolas', monospace;
+        transition: all 0.15s;
+        white-space: nowrap;
+      }
+
+      .marketplace-link-btn:hover {
+        background: #0078d4 !important;
+        color: #fff !important;
+        font-weight: normal !important;
+      }
+
       /* === Checklist CSS variables === */
       :root {
         --bg: #0d1117;
@@ -607,7 +629,7 @@
           <div class="checklist-meta-header">
             <div class="checklist-meta-top">
               <div class="checklist-title-group">
-                <img src="/assets/img/azure-icon.png" alt="Azure" style="width:48px;height:48px;flex-shrink:0;border-radius:50%;">
+                <img src="{% if page.resource_icon %}{{ page.resource_icon }}{% else %}/assets/img/azure-icon.png{% endif %}" alt="{{ page.resource_type | default: 'Azure' }}" style="width:48px;height:48px;flex-shrink:0;">
                 <div>
                   <h2>{{ page.title }}</h2>
                   <p class="ck-subtitle">{{ page.subtitle }}</p>
@@ -621,12 +643,20 @@
             {% endif %}
 
             {% if page.github_url %}
-            <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
-              <a href="{{ page.github_url }}" target="_blank" class="github-link-btn">
-                <img src="/assets/img/github-mark-white.png" alt="GitHub" style="width:16px;height:16px;">
-                View IaC on GitHub &#8594;
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
+              <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+                <a href="{{ page.github_url }}" target="_blank" class="github-link-btn">
+                  <img src="/assets/img/github-mark-white.png" alt="GitHub" style="width:16px;height:16px;">
+                  View IaC on GitHub &#8594;
+                </a>
+                <span style="color: #4a9eff; font-style: italic; font-size: 0.82em;">Resource templates, deployment scripts, and other helpful information.</span>
+              </div>
+              {% if page.marketplace_url %}
+              <a href="{{ page.marketplace_url }}" target="_blank" rel="noopener" class="marketplace-link-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                Marketplace &#8594;
               </a>
-              <span style="color: #4a9eff; font-style: italic; font-size: 0.82em;">Resource templates, deployment scripts, and other helpful information.</span>
+              {% endif %}
             </div>
             {% endif %}
           </div>

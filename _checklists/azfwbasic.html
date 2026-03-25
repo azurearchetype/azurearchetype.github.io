@@ -1,0 +1,287 @@
+---
+layout: checklist
+title: "Azure Firewall (Basic SKU) Pre-Deployment Checklist"
+subtitle: "Azure Firewall Basic — outbound/inbound traffic control for hub VNets, SMB and dev/test environments"
+badge: "Azure Networking"
+description: |
+  A comprehensive pre-deployment checklist for Azure Firewall deployed with the Basic SKU, as offered through the Azure Marketplace offer by frametype Solutions.
+
+  This checklist covers networking prerequisites (including the Basic SKU's mandatory management subnet), public IP requirements, firewall policy prerequisites, identity and access, monitoring, and IaC deployment. Firewall Policy is a separate Azure resource — this checklist notes its requirements but a dedicated Firewall Policy checklist covers rule collection planning in detail.
+
+  The Basic SKU is designed for environments with outbound throughput needs up to 250 Mbps. Key constraints versus Standard and Premium SKUs are called out inline on each relevant item.
+github_url: "https://github.com/frametypeSolutions/azMarketplace-azureFirewallBasic"
+marketplace_url: "https://marketplace.microsoft.com/en-us/product/frametype.azurefirewall-basic?tab=Overview"
+resource_type: "Azure Firewall"
+resource_icon: "/assets/img/azure-icons/icon-azfw.svg"
+nav_label: "azureFirewall-Basic"
+---
+
+<div class="complete-banner" id="completeBanner">
+  ✅ All items checked — ready to deploy.
+</div>
+
+<div class="progress-bar-wrap">
+  <span class="progress-label">Progress</span>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <span class="progress-pct" id="progressPct">0%</span>
+  <span class="progress-label" id="progressCount">0 / 0</span>
+</div>
+
+<div class="arm-legend">
+  <span class="arm-badge">&#9654; ARM</span> Items marked <strong>ARM</strong> map to required properties in the ARM resource declaration — the portal will not submit and the ARM/Bicep template will fail validation without them.
+</div>
+
+<div class="sections" id="sections"></div>
+
+<div class="actions">
+  <button class="btn-primary" onclick="expandAll()">Expand all</button>
+  <button class="btn-ghost" onclick="collapseAll()">Collapse all</button>
+  <button class="btn-ghost" onclick="resetAll()">Reset checklist</button>
+</div>
+
+<div class="compliance-panel">
+  <h2 class="compliance-heading">Compliance alignment</h2>
+  <p class="compliance-intro">This checklist is reviewed and maintained against three Microsoft architectural frameworks. Items within each section are tagged <span class="tag tag-required">required</span>, <span class="tag tag-recommended">recommended</span>, or <span class="tag tag-optional">optional</span> based on framework guidance — with Zero Trust items typically driving the <span class="tag tag-required">required</span> bar, and Well-Architected pillar guidance informing the <span class="tag tag-recommended">recommended</span> set.</p>
+  <div class="compliance-cards">
+
+    <div class="compliance-card">
+      <div class="compliance-card-header">
+        <span class="compliance-icon caf">CAF</span>
+        <div>
+          <div class="compliance-card-title">Cloud Adoption Framework</div>
+          <div class="compliance-card-subtitle">Governance &amp; operations</div>
+        </div>
+      </div>
+      <p>Naming follows the CAF pattern <strong>afw-{workload}-{env}-{region}-{index}</strong> for the firewall and <strong>pip-{workload}-{env}-{region}-{index}</strong> for each Public IP — naming is enforced at deployment time and cannot be changed post-deployment. The deployment is designed for hub VNet integration consistent with CAF landing zone connectivity subscriptions. Governance items address resource tagging (<strong>Workload</strong>, <strong>Environment</strong>, <strong>CostCenter</strong>, <strong>createdBy</strong>), CanNotDelete resource locks on the firewall resource group, and Azure Policy compliance for network security baselines. Note that the Azure Marketplace offer deploys through a managed template — customized naming must be applied via offer parameters before submission.</p>
+    </div>
+
+    <div class="compliance-card">
+      <div class="compliance-card-header">
+        <span class="compliance-icon waf">WAF</span>
+        <div>
+          <div class="compliance-card-title">Well-Architected Framework</div>
+          <div class="compliance-card-subtitle">All five pillars</div>
+        </div>
+      </div>
+      <p><strong>Reliability:</strong> Built-in high availability is included in the service — no additional load balancers are required. However, Basic SKU does not support availability zone deployment, limiting zone-level resiliency. <strong>Security:</strong> Centralized traffic inspection for both application-level (FQDN) and network-level (IP/port/protocol) rules; Threat Intelligence in Alert mode surfaces known-malicious traffic. Deny mode of Threat Intelligence requires Standard or Premium SKU. <strong>Performance Efficiency:</strong> Basic SKU supports up to 250 Mbps throughput — evaluate against peak workload requirements; scale-out requires SKU migration. <strong>Cost Optimization:</strong> ~$284/month base cost plus $0.065/GB; first Firewall Policy association is $0. <strong>Operational Excellence:</strong> Full IaC via Bicep with Marketplace offer deployment for repeatable, governed deployments.</p>
+    </div>
+
+    <div class="compliance-card">
+      <div class="compliance-card-header">
+        <span class="compliance-icon zt">ZT</span>
+        <div>
+          <div class="compliance-card-title">Zero Trust</div>
+          <div class="compliance-card-subtitle">Verify, least privilege, assume breach</div>
+        </div>
+      </div>
+      <p><strong>Verify explicitly:</strong> All traffic to and from spoke subnets is inspected against Firewall Policy rule collections — no implicit trust based on source network. Application rules enforce FQDN allowlisting rather than broad IP ranges. Threat Intelligence in Alert mode provides visibility into connections to known malicious destinations. <strong>Least privilege:</strong> Firewall Contributor access to operations teams is time-bound through PIM; no standing Owner or Contributor on the firewall resource group. <strong>Assume breach:</strong> The firewall provides the only permitted egress path for protected subnets (enforced via UDR 0.0.0.0/0 → firewall private IP); spoke-to-spoke lateral movement can be controlled by sending inter-subnet traffic through the firewall as well. NSGs on spoke subnets remain essential — the firewall controls north-south traffic, not east-west intra-VNet movement.</p>
+    </div>
+
+  </div>
+</div>
+
+<div class="references-panel">
+  <h2 class="references-heading">References</h2>
+  <div class="references-body">
+    <a class="ref-top-link" href="https://learn.microsoft.com/en-us/azure/firewall/" target="_blank" rel="noopener">Azure Firewall documentation — Microsoft Learn</a>
+    <div class="ref-groups">
+
+      <div class="ref-group">
+        <p class="ref-group-title">Basic SKU &amp; architecture</p>
+        <ul>
+          <li><a href="https://learn.microsoft.com/en-us/azure/firewall/basic-features" target="_blank" rel="noopener">Azure Firewall Basic features</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/firewall/choose-firewall-sku" target="_blank" rel="noopener">Choose an Azure Firewall SKU</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/firewall/tutorial-firewall-deploy-portal" target="_blank" rel="noopener">Deploy &amp; configure Azure Firewall</a></li>
+        </ul>
+      </div>
+
+      <div class="ref-group">
+        <p class="ref-group-title">Networking &amp; subnets</p>
+        <ul>
+          <li><a href="https://learn.microsoft.com/en-us/azure/firewall/firewall-faq#what-are-the-azure-firewall-limits" target="_blank" rel="noopener">Azure Firewall limits &amp; constraints</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/firewall/forced-tunneling" target="_blank" rel="noopener">Azure Firewall forced tunneling</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/firewall/snat-private-range" target="_blank" rel="noopener">Azure Firewall SNAT private ranges</a></li>
+        </ul>
+      </div>
+
+      <div class="ref-group">
+        <p class="ref-group-title">Firewall Policy</p>
+        <ul>
+          <li><a href="https://learn.microsoft.com/en-us/azure/firewall-manager/policy-overview" target="_blank" rel="noopener">Azure Firewall Policy overview</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/firewall/policy-rule-sets" target="_blank" rel="noopener">Firewall Policy rule set structure</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/firewall/threat-intel" target="_blank" rel="noopener">Threat Intelligence filtering</a></li>
+        </ul>
+      </div>
+
+      <div class="ref-group">
+        <p class="ref-group-title">Monitoring &amp; operations</p>
+        <ul>
+          <li><a href="https://learn.microsoft.com/en-us/azure/firewall/logs-and-metrics" target="_blank" rel="noopener">Azure Firewall logs &amp; metrics</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/firewall/monitor-firewall" target="_blank" rel="noopener">Monitor Azure Firewall</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/firewall-manager/policy-analytics" target="_blank" rel="noopener">Firewall Policy Analytics</a></li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const data = [
+  {
+    id: 'network', cls: 's-network', icon: 'NET', title: 'Networking prerequisites',
+    items: [
+      { label: 'Virtual network exists in the target region', detail: 'The ARM deployment references the existing VNet by name and resource group. The firewall must be deployed into the same Azure region as the VNet — cross-region deployment is not supported. In a hub-spoke topology, confirm this is the hub VNet and that the platform or connectivity team has approved adding the firewall subnets to the existing address space.', tag: 'required', arm: true },
+      { label: 'AzureFirewallSubnet provisioned at /26 or larger', detail: 'Azure requires a subnet named exactly "AzureFirewallSubnet" (case-sensitive). Minimum /26 (64 addresses); /25 is often recommended for future flexibility. The subnet is dedicated to the firewall data plane — no other resources may be placed in it. NSGs are not supported on this subnet. Confirm the subnet exists and is empty before deploying.', tag: 'required', arm: true },
+      { label: 'AzureFirewallManagementSubnet provisioned at /26 or larger — Basic SKU always requires this', detail: 'BASIC SKU SPECIFIC REQUIREMENT: Unlike Standard and Premium SKUs (where AzureFirewallManagementSubnet is only required when forced tunneling is configured), the Basic SKU always requires this subnet regardless of routing configuration. It handles Azure platform management traffic separately from data plane traffic. The subnet must be named exactly "AzureFirewallManagementSubnet" and must be at minimum /26. A dedicated Standard SKU management Public IP must be associated with this subnet. This is the most commonly missed prerequisite for first-time Basic SKU deployments.', tag: 'required', arm: true },
+      { label: 'No NSGs associated with AzureFirewallSubnet', detail: 'Network Security Groups are not supported on AzureFirewallSubnet. An NSG on this subnet blocks Azure\'s internal health probe and management traffic, causing the firewall to deploy but remain non-functional or enter a degraded state. If your Azure Policy or governance automation requires NSGs on all subnets, add an explicit exemption for AzureFirewallSubnet before deployment.', tag: 'required' },
+      { label: 'No NSGs associated with AzureFirewallManagementSubnet', detail: 'The same NSG restriction applies to AzureFirewallManagementSubnet. An NSG on the management subnet interrupts Azure platform communication for the Basic SKU, which routes all management traffic through this dedicated interface. Both firewall subnets must be NSG-free — confirm before initiating deployment.', tag: 'required' },
+      { label: 'No UDRs on AzureFirewallManagementSubnet', detail: 'The management subnet requires unrestricted internet egress for Azure platform management operations. Any UDR that redirects traffic from AzureFirewallManagementSubnet (for example, a 0.0.0.0/0 route pointing to an NVA, ExpressRoute gateway, or another firewall) will break platform management communication and the firewall will become unmanageable. The data subnet (AzureFirewallSubnet) may have UDRs for forced tunneling scenarios; the management subnet must always route directly to the internet.', tag: 'required' },
+      { label: 'Spoke subnet route tables planned for 0.0.0.0/0 → firewall private IP', detail: 'For the firewall to inspect outbound traffic from spoke subnets, a User Defined Route (UDR) with a 0.0.0.0/0 default route pointing to the firewall\'s private IP must be applied to each protected subnet. The private IP is assigned from AzureFirewallSubnet during deployment — it is not known in advance unless the first host address is reserved by design. Deploy the firewall first, retrieve the private IP from the portal or ARM outputs, then apply route tables to spoke subnets. For AKS, App Service Environment, and other managed services, verify that this UDR does not conflict with the service\'s own routing requirements.', tag: 'recommended' },
+      { label: 'VNet address space and peered network CIDRs documented for SNAT configuration', detail: 'Azure Firewall does not SNAT traffic destined for RFC 1918 private address spaces (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16) by default. Any private CIDR ranges used in peered networks or on-premises that fall outside these standard ranges must be added to the SNAT private range override in the Firewall Policy to prevent unintended SNAT on internal traffic. Document all connected CIDR ranges before configuring rules.', tag: 'recommended' },
+      { label: 'No existing Azure Firewall in the target AzureFirewallSubnet', detail: 'Only one Azure Firewall can exist per AzureFirewallSubnet. A second deployment into a subnet already containing a firewall will fail. Run az network firewall list --resource-group <rg-name> or navigate to the VNet → Subnets in the portal to confirm the subnet is unoccupied before proceeding.', tag: 'required' }
+    ]
+  },
+  {
+    id: 'pubip', cls: 's-gateway', icon: 'PIP', title: 'Public IP addresses',
+    items: [
+      { label: 'Data plane Public IP: Standard SKU, Static allocation', detail: 'Azure Firewall requires a Standard SKU Public IP with Static allocation for the data plane (associated with AzureFirewallSubnet). Basic SKU Public IP is not supported. Dynamic allocation is not supported. This IP appears as the source address for all outbound SNAT traffic from protected subnets and as the inbound target for any DNAT rules. Verify the PIP SKU and allocation method in the Azure Portal before associating.', tag: 'required', arm: true },
+      { label: 'Management Public IP: Standard SKU, Static — separate IP required for Basic SKU', detail: 'BASIC SKU SPECIFIC REQUIREMENT: A second, dedicated Standard SKU Static Public IP must be provisioned for the AzureFirewallManagementSubnet. This IP is used exclusively by the Azure platform for firewall health probes and management traffic — it does not appear in firewall application or network rule logs and cannot be used for data plane SNAT or DNAT. Standard and Premium SKU firewalls only require a management IP when forced tunneling is configured; the Basic SKU always requires it. Forgetting to provision this second PIP is the most common reason Basic SKU deployments fail at the portal submission step.', tag: 'required', arm: true },
+      { label: 'Both Public IPs are in the same Azure region as the firewall', detail: 'Public IP addresses must exist in the same Azure region as the firewall resource they are associated with. Cross-region association fails during ARM validation. If reusing existing Standard PIPs from another deployment or region, confirm their region in: Azure Portal → Public IP addresses → Overview → Location before associating them.', tag: 'required', arm: true },
+      { label: 'CAF naming applied to both Public IPs before deployment', detail: 'CAF convention for Public IPs: pip-{workload}-{env}-{region}-{index}. Distinguish the data and management IPs clearly in the naming — for example: pip-azfw-prod-eus-01 (data) and pip-azfw-prod-eus-mgt-01 (management). This naming distinction is critical operationally: if an operator cannot easily identify the management IP, they may inadvertently use it as a DNAT target or remove it, which disables firewall management communication. Names cannot be changed post-deployment.', tag: 'required' },
+      { label: 'Data plane Public IP documented for external allowlisting and DNAT targets', detail: 'The data plane Public IP is the source address for all outbound SNAT traffic from protected subnets. Share this IP address with external partners, SaaS providers, and on-premises firewall administrators who need to allowlist inbound traffic from Azure. For DNAT rules (inbound traffic forwarding), this is also the destination IP specified in inbound NAT rules in the Firewall Policy. Obtaining this IP after deployment and distributing it to stakeholders is a post-deployment action that is easy to overlook — plan it into your deployment runbook.', tag: 'recommended' },
+      { label: 'Additional data PIPs evaluated for SNAT port capacity', detail: 'Basic SKU supports multiple data plane Public IPs. Each additional Standard PIP associated with the firewall data plane increases available SNAT port capacity for outbound connections. For environments with high concurrent outbound connection rates (AKS clusters pulling container images, VMSS with many instances, Azure Functions at scale), evaluate whether a single PIP is sufficient at expected peak load. Monitor SNATPortUtilization metric post-deployment and add PIPs proactively before exhaustion is reached.', tag: 'optional' }
+    ]
+  },
+  {
+    id: 'policy', cls: 's-waf', icon: 'POL', title: 'Firewall Policy prerequisite',
+    items: [
+      { label: 'Basic tier Firewall Policy exists or will be created before deployment', detail: 'BASIC SKU CONSTRAINT: Azure Firewall Basic SKU requires a Firewall Policy — classic rules mode is NOT supported on Basic SKU (unlike Standard SKU which supports both classic rules and policy). Additionally, the policy must be a Basic tier policy — Standard or Premium tier policies cannot be associated with a Basic SKU firewall. This constraint is enforced by the ARM API: a Standard/Premium policy association with a Basic firewall will fail at deployment time with a validation error. Confirm the policy tier and ensure the policy exists (or is created as part of the same deployment) before submitting.', tag: 'required', arm: true },
+      { label: 'Firewall Policy is in the same Azure region as the firewall', detail: 'A Firewall Policy must be in the same Azure region as the firewall it is associated with. Cross-region policy associations are not supported. If deploying the firewall in a new region, create the policy in that region first. Note that a single policy can be shared across multiple firewall instances in the same region — for example, a hub firewall and a spoke firewall can share one policy if they are in the same region.', tag: 'required', arm: true },
+      { label: 'Threat Intelligence mode: Alert only — Deny mode is not available on Basic SKU', detail: 'BASIC SKU LIMITATION: Threat Intelligence can be set to Alert mode on Basic SKU, which logs and alerts on connections to Microsoft\'s known-malicious IP/domain feed. However, Deny mode — which actively blocks those connections — is not available on Basic SKU and requires Standard or Premium SKU. If actively blocking threat intelligence-matched traffic is a security requirement for the environment, the Basic SKU does not satisfy this requirement. Evaluate the upgrade path to Standard SKU if this is a compliance gap.', tag: 'required' },
+      { label: 'DNS Proxy configuration decision documented in the policy', detail: 'The Firewall Policy DNS Proxy feature (configured in the policy DNS settings) causes the firewall to act as the DNS forwarder for VMs in associated subnets. DNS Proxy is required to enable FQDN-based filtering in Network rules (not just Application rules). If DNS Proxy is enabled, VMs must point their DNS to the firewall private IP (or have it set via DHCP/VNet DNS settings). Decide whether DNS Proxy will be enabled before policy creation — this affects spoke VM DNS configuration and must be communicated to workload teams.', tag: 'recommended' },
+      { label: 'IP Groups identified for rule collection organization', detail: 'IP Groups are a separate Azure resource that group IP address ranges and can be referenced in Firewall Policy application and network rules. They simplify rule maintenance by allowing centrally managed IP sets. The Bicep template includes an IP Group resource (ipg-afw-*). Define your IP Group structure before building rule collections — grouping by workload tier, subnet block, or environment (dev/prod) makes future rule updates significantly easier.', tag: 'recommended' },
+      { label: 'Note: Firewall Policy is a separate Azure resource — use the dedicated Firewall Policy checklist', detail: 'Azure Firewall Policy is an independent ARM resource with its own rule collection groups, application rules, network rules, DNAT rules, and governance requirements. This checklist covers only the firewall resource prerequisites. Rule collection planning, DNAT configuration, FQDN tag usage, application rule structure, and policy-level settings (DNS Proxy, Threat Intelligence, IDPS - N/A on Basic) are covered in the Azure Firewall Policy Pre-Deployment Checklist. Complete the policy checklist before populating rules in production.', tag: 'recommended' },
+      { label: 'First Firewall Policy association incurs no additional charge', detail: 'Azure Firewall Policy pricing: the first Basic tier policy associated with a single firewall in a single region is $0/month. For this standard single-region hub firewall deployment, the policy cost is included at no extra charge. Additional policies in the same region or policies spanning multiple regions are billed at approximately $100/policy/region/month. This pricing applies to the policy resource itself — firewall gateway hours ($0.395/hr) and data processing ($0.065/GB) are separate.', tag: 'optional' }
+    ]
+  },
+  {
+    id: 'identity', cls: 's-identity', icon: 'IAM', title: 'Identity & access',
+    items: [
+      { label: 'Contributor or Owner role confirmed on the target subscription or resource group', detail: 'Deploying via the Azure Marketplace offer requires at minimum Contributor at the subscription or resource group scope. The Marketplace provisioning service creates the resource group, provisions all resources, and assigns initial configuration on behalf of the signed-in user. Owner is required if post-deployment RBAC assignments need to be made. For direct ARM/Bicep deployment (using the private repo), the same minimum Contributor scope applies plus Network Contributor on the hub VNet resource group if the VNet is in a separate RG.', tag: 'required' },
+      { label: 'RBAC roles planned for ongoing firewall operations', detail: 'Post-deployment, define distinct RBAC roles for: firewall rule management (Azure Firewall Contributor or Network Contributor), monitoring-only access (Reader), and emergency break-glass (Owner via PIM). Avoid granting Owner as a standing role — a firewall rule change or deletion has immediate network-wide impact on all protected workloads. Document intended role assignments and key contacts for each role before go-live.', tag: 'recommended' },
+      { label: 'PIM / JIT access configured for elevated firewall management', detail: 'Zero Trust — least privilege: use Privileged Identity Management (PIM) for time-bound, approval-gated elevation of Network Contributor or Azure Firewall Contributor roles on the firewall resource group. No standing elevated access for operational teams. Any rule change or configuration update on a production firewall should require justification and create an audit trail. This is particularly important because incorrect firewall rules can block entire workloads silently.', tag: 'recommended' },
+      { label: 'Azure subscription confirmed and Public IP + Firewall quota verified in target region', detail: 'Confirm the subscription has available quota for Azure Firewall and Standard SKU Public IPs in the target region. Firewall quota limits vary by region and subscription type. Check under Azure Portal → Subscriptions → Usage + quotas. Both Public IPs (data and management) require Standard SKU PIP quota entries. Quota exhaustion produces "QuotaExceeded" errors during deployment with no self-service remediation — raise a support request proactively if quota appears insufficient.', tag: 'required' },
+      { label: 'Marketplace deployment authentication and offer entitlement confirmed', detail: 'The Azure Marketplace offer deploys using the signed-in user\'s Azure credentials. Confirm the user account has the required RBAC permissions (see above) and that the subscription is associated with a valid Azure offer type that supports Marketplace transactable offers. Enterprise Agreement, Microsoft Customer Agreement, and pay-as-you-go subscriptions support Marketplace purchases. Dev/Test and some CSP subscriptions have restrictions. Verify eligibility in Microsoft Admin Center before initiating the Marketplace purchase.', tag: 'required' }
+    ]
+  },
+  {
+    id: 'monitor', cls: 's-monitor', icon: 'OBS', title: 'Monitoring & diagnostics',
+    items: [
+      { label: 'Log Analytics workspace identified or provisioned', detail: 'The Bicep template provisions a Log Analytics workspace (law-afw-{workload}-{env}-{region}-{index}) as part of the deployment. Confirm whether to use this auto-created workspace or consolidate with an existing hub/connectivity workspace. Centralizing firewall logs with other hub network resources simplifies cross-resource KQL queries and reduces workspace management overhead. If using an existing workspace, disable the workspace creation parameter before Marketplace submission to avoid a duplicate resource.', tag: 'required' },
+      { label: 'Diagnostic settings configured for all Azure Firewall log categories', detail: 'Configure diagnostic settings on the firewall resource to send all log categories to Log Analytics: AzureFirewallApplicationRule (application rule match/deny events), AzureFirewallNetworkRule (network rule matches), AzureFirewallDnsProxy (DNS queries, if DNS Proxy is enabled), and AzureFirewallThreatIntelLog (Threat Intelligence alert events). Also enable all metrics including SNATPortUtilization and FirewallHealth. These logs are required for rule validation, investigating connectivity issues, and satisfying network audit logging requirements.', tag: 'required' },
+      { label: 'Policy Analytics enabled for rule usage baseline', detail: 'Azure Firewall Policy Analytics surfaces unused rules, top-used rules, and traffic flow insights within Azure Firewall Manager. Enable it after initial deployment to baseline traffic patterns against rule collections. This is particularly valuable during the first 30–60 days: it identifies overly permissive rules, rules that were added for testing and never removed, and traffic flows not yet covered by explicit allow rules. Available for Basic SKU at no additional cost.', tag: 'recommended' },
+      { label: 'Alert defined: FirewallHealth metric dropping below 100%', detail: 'Monitor the FirewallHealth metric. A value below 100% indicates the firewall is in a degraded state — connections may continue to pass but performance and availability are impacted. A value of 0% indicates the firewall is down. Set a metric alert that triggers immediately when FirewallHealth drops below 100% — firewall health degradation is not always visible in application logs and may only surface as intermittent connectivity problems in spoke workloads.', tag: 'recommended' },
+      { label: 'Alert defined: SNATPortUtilization approaching capacity', detail: 'Monitor SNATPortUtilization. When this metric sustained above 80%, the firewall is approaching SNAT port exhaustion. Connections will begin failing silently — workloads report connection timeouts with no descriptive error message visible from the workload side. Configure a metric alert at 75% threshold as an early warning and plan to add additional data plane Public IPs before the limit is reached. Threshold interpretation depends on connection patterns — review alongside connection count logs for context.', tag: 'recommended' },
+      { label: 'Cost alert configured: ~$284/month base plus data processing', detail: 'Azure Firewall Basic SKU billing: $0.395/hour per firewall instance (~$284/month base cost) plus $0.065 per GB of processed traffic. For environments with significant outbound data volume (AKS image pulls, large file transfers, high-volume API traffic), data processing charges can substantially exceed the base cost. Set a monthly budget alert in Azure Cost Management targeting the firewall resource group. The Marketplace offer bills directly to Azure consumption — there is no separate offer fee.', tag: 'recommended' },
+      { label: 'Log retention period aligned with compliance and audit requirements', detail: 'Default Log Analytics workspace retention is 30 days. Firewall logs covering application rule denies, network rule events, and threat intelligence alerts are typically subject to network security audit requirements — usually 90–365 days depending on organizational policy or regulatory framework. Extend workspace retention under Settings → Usage and estimated costs → Data Retention, or configure diagnostic settings to archive to a storage account for long-term, lower-cost retention.', tag: 'recommended' }
+    ]
+  },
+  {
+    id: 'iac', cls: 's-iac', icon: 'IaC', title: 'IaC & deployment',
+    items: [
+      { label: 'CAF naming confirmed for all resources before deployment — names are immutable', detail: 'All Azure Firewall-related resource names are immutable after deployment — renaming requires full deletion and recreation. Confirm CAF-aligned names for: firewall (afw-{workload}-{env}-{region}-{index}), data PIP (pip-azfw-{env}-{region}-{index}), management PIP (pip-azfw-{env}-{region}-mgt-{index}), IP Group (ipg-afw-*), VNet (vn-afw-*), route table (rt-afw-*), and Log Analytics workspace (law-afw-*) before submitting the Marketplace offer form. The Bicep template uses the pattern from the repository examples — customize via parameters.', tag: 'required' },
+      { label: 'Route table deployment sequencing planned: firewall private IP needed for UDR', detail: 'Spoke subnet route tables require the firewall\'s private IP address (assigned from AzureFirewallSubnet at deployment time) for the 0.0.0.0/0 → Next Hop: Virtual Appliance route. The private IP is not known before deployment unless explicitly pre-planned. Options: (1) deploy the firewall first, retrieve the private IP from ARM outputs or the portal, then create route tables; or (2) pre-plan the private IP as the first available host address in the AzureFirewallSubnet CIDR and set up route tables before deployment. The Bicep template includes a route table (rt-afw-*) — confirm the private IP value is set correctly before applying it to spoke subnets.', tag: 'required' },
+      { label: 'Resource tags applied to all resources at deployment time', detail: 'CAF governance: apply at minimum Workload, Environment, CostCenter, and createdBy tags to all provisioned resources (firewall, PIPs, VNet, route table, IP Group, Log Analytics workspace) at deployment time via template parameters. The Marketplace offer form may support tag inputs — confirm this per the offer UI before deployment. Post-deployment tagging via policy remediation is possible but inconsistent across firewall resource types. Firewall resources are high-value hub networking assets that must be correctly tagged for cost allocation and Azure Policy targeting.', tag: 'required' },
+      { label: 'CanNotDelete management lock applied to firewall resource group after deployment', detail: 'CAF governance: immediately after deployment succeeds, apply a CanNotDelete management lock to the firewall resource group. Accidental deletion of the firewall resource, either Public IP, or the AzureFirewallManagementSubnet immediately severs internet egress for all protected spoke subnets and disables Azure management plane communication. Recovery requires full firewall redeployment and redistribution of the new private IP to all spoke route tables — a significant production incident. Management locks prevent runbook accidents, portal misclicks, and automated cleanup scripts from causing this scenario.', tag: 'recommended' },
+      { label: 'Basic → Standard/Premium upgrade path documented: requires full resource rebuild', detail: 'BASIC SKU LIMITATION: There is no in-place SKU upgrade path from Basic to Standard or Premium. Upgrading the SKU requires: (1) export and document all Firewall Policy rule collections, (2) delete the Basic firewall resource (this immediately cuts all protected egress), (3) create a new Standard or Premium tier Firewall Policy with a Standard/Premium tier SKU, (4) redeploy the firewall using Standard or Premium SKU, and (5) re-associate route tables and re-verify all traffic flows. Plan for a maintenance window. Build rule collections in a way that makes documentation and re-creation straightforward — JSON export of policy rules is supported and should be version-controlled.', tag: 'recommended' },
+      { label: 'Post-deployment validation runbook defined', detail: 'After deployment, validate systematically: (1) firewall reports Succeeded provisioning state in the portal, (2) both Public IPs display assigned IP addresses, (3) route tables are applied to spoke subnets, (4) a test VM in a spoke subnet can reach the internet (verify via curl https://ifconfig.io — the response IP should match the firewall\'s data Public IP confirming traffic is NATted), (5) a connection that should be blocked is denied and appears in AzureFirewallApplicationRule or AzureFirewallNetworkRule logs, and (6) diagnostic settings are forwarding data to Log Analytics. Document the validation steps and expected outcomes for the operations team.', tag: 'recommended' },
+      { label: 'IaC stored in source control with branch protection on firewall-related changes', detail: 'The public repo at https://github.com/frametypeSolutions/azMarketplace-azureFirewallBasic contains supporting documentation and scripts for the Marketplace offer. For customized deployments derived from the offer artifacts, apply branch protection: require peer review on all changes to firewall Bicep templates and policy rule collections, and run what-if validation in CI/CD pipelines before merge to main. Any rule change has immediate network-wide effect on all workloads routing through the firewall.', tag: 'recommended' }
+    ]
+  }
+];
+
+const state = {};
+
+function updateProgress() {
+  let total = 0, checked = 0;
+  data.forEach(sec => sec.items.forEach(item => {
+    total++;
+    if (state[sec.id + ':' + item.label]) checked++;
+  }));
+  const pct = total ? Math.round(checked / total * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressPct').textContent = pct + '%';
+  document.getElementById('progressCount').textContent = checked + ' / ' + total;
+  document.getElementById('completeBanner').style.display = (checked === total && total > 0) ? 'block' : 'none';
+  data.forEach(sec => {
+    const el = document.querySelector('[data-id="' + sec.id + '"]');
+    if (!el) return;
+    let sc = 0;
+    sec.items.forEach(item => { if (state[sec.id + ':' + item.label]) sc++; });
+    el.querySelector('.section-count').textContent = sc + ' / ' + sec.items.length;
+  });
+}
+
+function toggleItem(secId, labelEncoded) {
+  const label = decodeURIComponent(labelEncoded);
+  const key = secId + ':' + label;
+  state[key] = !state[key];
+  const item = document.querySelector('[data-key="' + secId + '__' + labelEncoded + '"]');
+  if (item) item.classList.toggle('checked', state[key]);
+  updateProgress();
+}
+
+function tagHTML(tag) {
+  const map = { required: 'tag-required', optional: 'tag-optional', recommended: 'tag-recommended', bicep: 'tag-bicep' };
+  return '<span class="item-tag ' + (map[tag] || 'tag-optional') + '">' + tag + '</span>';
+}
+
+function escapeHTML(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function render() {
+  const container = document.getElementById('sections');
+  container.innerHTML = '';
+  data.forEach((sec, si) => {
+    const div = document.createElement('div');
+    div.className = 'section ' + sec.cls + (si === 0 ? ' open' : '');
+    div.dataset.id = sec.id;
+    const itemsHTML = sec.items.map((item, ii) => {
+      const enc = encodeURIComponent(item.label);
+      const keyAttr = sec.id + '__' + enc;
+      return '<div class="item" data-key="' + keyAttr + '" onclick="toggleItem(\'' + sec.id + '\',\'' + enc + '\')">' +
+        '<div class="checkbox"><span class="checkmark">&#10003;</span></div>' +
+        '<div class="item-content">' +
+          '<div class="item-label">' + (item.arm ? '<span class="arm-badge">&#9654; ARM</span>' : '') + escapeHTML(item.label) + '</div>' +
+          '<div class="item-detail">' + escapeHTML(item.detail) + '</div>' +
+          tagHTML(item.tag) +
+        '</div></div>' +
+        (ii < sec.items.length - 1 ? '<div class="divider"></div>' : '');
+    }).join('');
+    div.innerHTML =
+      '<div class="section-header" onclick="this.closest(\'.section\').classList.toggle(\'open\')">' +
+        '<div class="section-icon">' + sec.icon + '</div>' +
+        '<span class="section-title">' + sec.title + '</span>' +
+        '<span class="section-count">0 / ' + sec.items.length + '</span>' +
+        '<span class="section-chevron">&#9654;</span>' +
+      '</div>' +
+      '<div class="section-body">' + itemsHTML + '</div>';
+    container.appendChild(div);
+  });
+  updateProgress();
+}
+
+function expandAll()  { document.querySelectorAll('.section').forEach(s => s.classList.add('open')); }
+function collapseAll(){ document.querySelectorAll('.section').forEach(s => s.classList.remove('open')); }
+function resetAll() {
+  if (confirm('Reset all checkboxes?')) {
+    Object.keys(state).forEach(k => delete state[k]);
+    document.querySelectorAll('.item').forEach(el => el.classList.remove('checked'));
+    updateProgress();
+  }
+}
+
+render();
+</script>

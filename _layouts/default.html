@@ -678,10 +678,10 @@
         {% for checklist in site.checklists %}
         <div style="margin-bottom: 8px; text-align: left;">
           <a href="{{ checklist.url | relative_url }}"
-             style="color: #ccc; text-decoration: none; font-size: 0.82em; display: block; padding: 7px 10px; border-radius: 4px; background: #1e2535; border: 1px solid #2a3550; transition: all 0.15s;"
+               style="color: #ccc; text-decoration: none; font-size: 0.82em; display: block; padding: 7px 10px; border-radius: 4px; background: #1e2535; border: 1px solid #2a3550; transition: all 0.15s; text-align: center;"
              onmouseover="this.style.color='#4a9eff';this.style.borderColor='#4a9eff'"
              onmouseout="this.style.color='#ccc';this.style.borderColor='#2a3550'">
-            {{ checklist.resource_type | default: checklist.title }}
+            {{ checklist.nav_label | default: checklist.resource_type | default: checklist.title }}
           </a>
         </div>
         {% endfor %}
