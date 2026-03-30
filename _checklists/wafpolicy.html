@@ -1,0 +1,305 @@
+---
+layout: checklist
+title: "Azure WAF Policy Pre-Deployment Checklist"
+subtitle: "Azure Web Application Firewall Policy — rule set selection, custom rules, exclusions, and mode configuration for Application Gateway"
+badge: "Azure Networking"
+badge2: "Security"
+description: |
+  A comprehensive pre-deployment checklist for Azure Web Application Firewall (WAF) Policy as a standalone ARM resource associated with an Application Gateway (WAF_v2 SKU).
+
+  WAF Policy is a separate resource from the Application Gateway itself — it can be versioned, shared across multiple gateways, and updated independently. This checklist covers managed rule set selection and version, custom rule authoring (IP match, geo-match, rate limiting, string match), per-listener vs global policy association, exclusion planning, Detection-to-Prevention mode transition, bot protection, and IaC deployment.
+
+  Application Gateway infrastructure prerequisites (subnet, NSG, SKU selection, listeners, backend pools) are covered in the Azure Application Gateway Pre-Deployment Checklist. This checklist assumes the gateway is already provisioned or being provisioned in parallel.
+github_url: "https://github.com/azurearchetype/deployAppGateway"
+resource_type: "Azure WAF Policy"
+resource_icon: "/assets/img/azure-icons/icon-wafpolicy.svg"
+nav_label: "azureWafPolicy"
+---
+
+<div class="complete-banner" id="completeBanner">
+  ✅ All items checked — ready to deploy.
+</div>
+
+<div class="progress-bar-wrap">
+  <span class="progress-label">Progress</span>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <span class="progress-pct" id="progressPct">0%</span>
+  <span class="progress-label" id="progressCount">0 / 0</span>
+</div>
+
+<div class="arm-legend">
+  <span class="arm-badge">&#9654; ARM</span> Items marked <strong>ARM</strong> map to required properties in the ARM resource declaration — the portal will not submit and the ARM/Bicep template will fail validation without them.
+</div>
+
+<div class="sections" id="sections"></div>
+
+<div class="actions">
+  <button class="btn-primary" onclick="expandAll()">Expand all</button>
+  <button class="btn-ghost" onclick="collapseAll()">Collapse all</button>
+  <button class="btn-ghost" onclick="resetAll()">Reset checklist</button>
+</div>
+
+<div class="compliance-panel">
+  <h2 class="compliance-heading">Compliance alignment</h2>
+  <p class="compliance-intro">This checklist is reviewed and maintained against three Microsoft architectural frameworks. Items within each section are tagged <span class="tag tag-required">required</span>, <span class="tag tag-recommended">recommended</span>, or <span class="tag tag-optional">optional</span> based on framework guidance — with Zero Trust items typically driving the <span class="tag tag-required">required</span> bar, and Well-Architected pillar guidance informing the <span class="tag tag-recommended">recommended</span> set.</p>
+  <div class="compliance-cards">
+
+    <div class="compliance-card">
+      <div class="compliance-card-header">
+        <span class="compliance-icon caf">CAF</span>
+        <div>
+          <div class="compliance-card-title">Cloud Adoption Framework</div>
+          <div class="compliance-card-subtitle">Governance &amp; operations</div>
+        </div>
+      </div>
+      <p>WAF Policy naming follows CAF convention: <strong>waf-{workload}-{env}-{region}-{index}</strong> (example: waf-ecomm-prod-eus-01). The policy is a distinct, independently versioned ARM resource — store its Bicep definition alongside the Application Gateway template in the same source control repository, with branch protection requiring peer review on all rule changes. Governance items address resource tagging (<strong>Workload</strong>, <strong>Environment</strong>, <strong>CostCenter</strong>, <strong>createdBy</strong>), CanNotDelete locks on the policy resource group, and Azure Policy compliance. Managed rule set upgrades are a governance event requiring a documented review, a Detection-mode validation window, and a defined rollback plan before re-enabling Prevention.</p>
+    </div>
+
+    <div class="compliance-card">
+      <div class="compliance-card-header">
+        <span class="compliance-icon waf">WAF</span>
+        <div>
+          <div class="compliance-card-title">Well-Architected Framework</div>
+          <div class="compliance-card-subtitle">All five pillars</div>
+        </div>
+      </div>
+      <p><strong>Reliability:</strong> WAF policy changes that incorrectly block legitimate traffic effectively take down the application — validate all rule additions and exclusion removals in Detection mode first, with a defined rollback procedure. <strong>Security:</strong> Prevention mode with OWASP CRS 3.2 or Microsoft DRS is the baseline; bot protection add-on, rate limiting on sensitive endpoints, and geo-blocking of irrelevant regions strengthen posture significantly. <strong>Performance Efficiency:</strong> overly broad exclusions reduce WAF effectiveness; overly narrow rules increase false positives and block legitimate traffic — tune against actual traffic logs from ApplicationGatewayFirewallLog. <strong>Cost Optimization:</strong> WAF Policy itself is billed per policy and per rule evaluation at scale — review custom rule count and ensure no redundant rules are left from tuning sessions. <strong>Operational Excellence:</strong> policy-as-code in source control with staged rollout (Detection → Prevention) and structured runbook for rule lifecycle management.</p>
+    </div>
+
+    <div class="compliance-card">
+      <div class="compliance-card-header">
+        <span class="compliance-icon zt">ZT</span>
+        <div>
+          <div class="compliance-card-title">Zero Trust</div>
+          <div class="compliance-card-subtitle">Verify, least privilege, assume breach</div>
+        </div>
+      </div>
+      <p><strong>Verify explicitly:</strong> WAF Prevention mode is the baseline — Detection-only WAF provides zero active protection, it only logs. Every request reaching backend application code must have traversed an actively blocking WAF policy. Per-listener policies allow stricter rules on sensitive paths (admin, API, auth) without loosening rules on public paths. <strong>Least privilege:</strong> WAF Policy Contributor access is time-bound via PIM — no standing write access for operations teams, as a misconfigured rule change blocks the entire application immediately. <strong>Assume breach:</strong> ApplicationGatewayFirewallLog provides a complete record of every request the WAF evaluated, every rule that fired, and every block action taken. Continuous monitoring of this log for anomalies (rule spike, new geo or IP pattern, unusual User-Agent) is the WAF's contribution to the assume-breach detection posture.</p>
+    </div>
+
+  </div>
+</div>
+
+<div class="references-panel">
+  <h2 class="references-heading">References</h2>
+  <div class="references-body">
+    <a class="ref-top-link" href="https://learn.microsoft.com/en-us/azure/web-application-firewall/" target="_blank" rel="noopener">Azure Web Application Firewall documentation — Microsoft Learn</a>
+    <div class="ref-groups">
+
+      <div class="ref-group">
+        <p class="ref-group-title">WAF Policy overview &amp; rule sets</p>
+        <ul>
+          <li><a href="https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/ag-overview" target="_blank" rel="noopener">WAF on Application Gateway overview</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/create-waf-policy-ag" target="_blank" rel="noopener">Create a WAF Policy for Application Gateway</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/application-gateway-crs-rulegroups-rules" target="_blank" rel="noopener">OWASP CRS rule groups and rules</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/drs-rulegroups-rules" target="_blank" rel="noopener">Microsoft Default Rule Set (DRS) — rule groups and rules</a></li>
+        </ul>
+      </div>
+
+      <div class="ref-group">
+        <p class="ref-group-title">Custom rules &amp; exclusions</p>
+        <ul>
+          <li><a href="https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/custom-waf-rules-overview" target="_blank" rel="noopener">WAF custom rules overview</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/create-custom-waf-rules" target="_blank" rel="noopener">Create and use custom WAF rules</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/application-gateway-waf-configuration" target="_blank" rel="noopener">WAF request size limits and exclusion lists</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/rate-limiting-overview" target="_blank" rel="noopener">WAF rate limiting (custom rules)</a></li>
+        </ul>
+      </div>
+
+      <div class="ref-group">
+        <p class="ref-group-title">Per-listener policies &amp; association</p>
+        <ul>
+          <li><a href="https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/policy-overview" target="_blank" rel="noopener">WAF Policy association — global, per-site, per-URI</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/per-site-policies" target="_blank" rel="noopener">Per-site WAF policies</a></li>
+        </ul>
+      </div>
+
+      <div class="ref-group">
+        <p class="ref-group-title">Monitoring &amp; tuning</p>
+        <ul>
+          <li><a href="https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/web-application-firewall-logs" target="_blank" rel="noopener">WAF logs and diagnostics</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/web-application-firewall-troubleshoot" target="_blank" rel="noopener">Troubleshoot WAF — false positives</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/bot-protection" target="_blank" rel="noopener">WAF bot protection ruleset</a></li>
+          <li><a href="https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/waf-sensitive-data-protection" target="_blank" rel="noopener">WAF sensitive data masking in logs</a></li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const data = [
+  {
+    id: 'prereq', cls: 's-network', icon: 'PRE', title: 'Prerequisites & policy scope',
+    items: [
+      { label: 'Application Gateway is WAF_v2 SKU — WAF Policy requires this SKU', detail: 'WAF Policy can only be associated with an Application Gateway deployed with the WAF_v2 SKU. Standard_v2 does not support WAF Policy association — attempting to associate will fail at ARM validation. Confirm the gateway SKU before creating or associating the policy. SKU cannot be changed after gateway deployment without full redeployment.', tag: 'required', arm: true },
+      { label: 'WAF Policy created as a standalone ARM resource — not inline on the gateway', detail: 'Best practice and the recommended architecture: create a Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies resource independently of the gateway, then associate it. Inline WAF configuration on the gateway itself is a legacy pattern — standalone WAF Policy resources can be versioned in source control, shared across multiple gateways, and updated without gateway redeployment. The Bicep template should define the policy as a separate resource block with an explicit association via the Application Gateway\'s webApplicationFirewallConfiguration.policyName or via the listener/path-map association.', tag: 'required', arm: true },
+      { label: 'Policy scope decided: global vs per-listener vs per-URI-path', detail: 'A WAF Policy can be associated at three scopes on an Application Gateway: (1) Global — applies to the entire gateway and all listeners with no per-site override; (2) Per-listener (per-site) — a different policy per listener, allowing stricter rules on the admin portal listener and looser rules on the public API listener; (3) Per-URI-path — policy applied to a specific path rule within a URL path map. Decide the association scope before policy creation — the association model affects the ARM resource structure and cannot be easily changed without reconfiguration.', tag: 'required', arm: true },
+      { label: 'Policy region matches the Application Gateway region', detail: 'WAF Policy must be in the same Azure region as the Application Gateway it is associated with. Cross-region policy associations are not supported. If managing multiple Application Gateways in different regions, a separate WAF Policy resource is required in each region — the policy configuration can be duplicated from source control, but they are distinct ARM resources.', tag: 'required', arm: true },
+      { label: 'Gateway and policy in the same resource group or cross-RG association confirmed', detail: 'WAF Policy and its associated Application Gateway do not need to be in the same resource group, but cross-RG association requires the deploying service principal to have at minimum Reader on the policy resource group and Contributor on the gateway resource group. Confirm the RBAC scope covers both if they are in separate resource groups — a common pattern when the gateway is in a spoke workload RG and a shared policy lives in a central security RG.', tag: 'recommended' }
+    ]
+  },
+  {
+    id: 'ruleset', cls: 's-waf', icon: 'CRS', title: 'Managed rule set selection',
+    items: [
+      { label: 'Rule set type selected: Microsoft DRS or OWASP CRS', detail: 'Two managed rule set types are available: (1) Microsoft Default Rule Set (DRS) — Microsoft-managed, updated more frequently than OWASP CRS, includes proprietary detections built from Microsoft threat intelligence, currently at DRS 2.1. (2) OWASP Core Rule Set (CRS) — industry-standard, community-maintained, currently available at CRS 3.2 and 3.1. DRS 2.1 is the recommended default for new deployments — it provides broader coverage and faster response to emerging threats. CRS 3.2 is appropriate when OWASP compliance attestation is required or when migrating from a non-Azure WAF with existing CRS-based tuning.', tag: 'required', arm: true },
+      { label: 'Rule set version confirmed — do not use end-of-life versions', detail: 'For OWASP CRS: use 3.2 (current recommended). CRS 3.1 is available for legacy compatibility but receives no new detections. CRS 2.2.9 is end-of-life and must not be used for new deployments. For Microsoft DRS: use DRS 2.1 (current). DRS 1.1 and older versions have known coverage gaps. The version is an ARM property set at policy creation — it can be changed post-deployment but requires a full Detection-mode validation cycle before switching Prevention mode back on.', tag: 'required', arm: true },
+      { label: 'Anomaly scoring mode confirmed (CRS 3.x and DRS)', detail: 'CRS 3.2 and DRS use anomaly scoring by default — individual rules increment a score and a request is blocked only when the cumulative score exceeds the threshold (default: 5 for anomaly, 3 for paranoia). This reduces false positives compared to the legacy per-rule blocking model. Confirm anomaly scoring is enabled (it is on by default for CRS 3.x and DRS). Do not disable it unless you have a specific rule-by-rule investigation requirement — per-rule blocking mode generates significantly more false positives.', tag: 'required' },
+      { label: 'Paranoia level evaluated if using DRS (default: 1)', detail: 'Microsoft DRS supports paranoia levels 1–4, controlling how aggressively rules are applied. Level 1 (default) covers well-known attacks with minimal false positives. Levels 2–4 increasingly tighten detection at the cost of more false positives. Evaluate against the sensitivity of the application — a public marketing site and an API handling PII have very different appropriate paranoia levels. Start at 1, review ApplicationGatewayFirewallLog under Detection mode, and increase only if threat intelligence justifies higher sensitivity.', tag: 'recommended' },
+      { label: 'Managed rule group overrides reviewed for application-specific disables', detail: 'Some managed rule groups commonly generate false positives for specific application types: REQUEST-942 (SQL injection) fires on legitimate database query strings in URL parameters; REQUEST-920 (protocol enforcement) can fire on some mobile SDKs; REQUEST-913 (scanner detection) fires on monitoring tools. Review the rule groups applicable to your application stack before deployment. Disable at the rule group level only if all rules in the group are inappropriate — prefer per-rule disables to maintain maximum coverage.', tag: 'recommended' },
+      { label: 'Rule set upgrade plan documented', detail: 'New DRS and CRS versions are released periodically. An upgrade is a governance event: (1) create a copy of the policy with the new rule set version, (2) associate it with the gateway in Detection mode, (3) run ApplicationGatewayFirewallLog analysis for a minimum of 72 hours under production traffic, (4) resolve new false positives with targeted exclusions, (5) switch to Prevention mode, (6) update the IaC and merge to source control. Document the upgrade plan and schedule a review of available versions at least quarterly.', tag: 'recommended' }
+    ]
+  },
+  {
+    id: 'mode', cls: 's-cert', icon: 'MOD', title: 'WAF mode & Detection-to-Prevention transition',
+    items: [
+      { label: 'Initial deployment in Detection mode', detail: 'Always deploy WAF Policy in Detection mode first. Detection mode logs every rule match without blocking any requests — this is the baseline tuning phase. Switching directly to Prevention mode on a new policy without a Detection-mode period is the single most common cause of application outages from WAF deployments. Detection mode provides zero active protection, but it is the only safe way to identify false positives before blocking begins.', tag: 'required', arm: true },
+      { label: 'Detection-mode baseline period defined (minimum 72 hours under production traffic)', detail: 'The Detection baseline window must cover a representative sample of production traffic — at minimum 72 hours, ideally covering a full weekly cycle including weekend traffic patterns (if applicable to your workload). Batch jobs, scheduled reports, monitoring tools, and partner system integrations all generate traffic that may not appear in a short window. A baseline that misses these patterns generates false positives that cause operational incidents immediately upon Prevention mode activation.', tag: 'required' },
+      { label: 'ApplicationGatewayFirewallLog queried for false positives before Prevention', detail: 'Before enabling Prevention mode, run KQL against ApplicationGatewayFirewallLog in Log Analytics: filter action = "Detected", group by ruleId and requestUri. Any rule-URI combination with frequent hits from known-good users or systems is a false positive candidate. Investigate each: is it a legitimate request that matches the rule pattern, or is it a genuinely malicious request the rule correctly identified? Do not automatically exclude all detected rules — only those confirmed as false positives against known traffic.', tag: 'required' },
+      { label: 'Prevention mode target date set and tracked', detail: 'Zero Trust — verify explicitly: Detection-only WAF provides no blocking protection. A WAF in Detection mode is effectively no WAF from an active security standpoint. Set a specific date for Prevention mode activation, track it as a security action item, and do not allow it to slip indefinitely due to unresolved false positives. Unresolved false positives indicate a tuning or exclusion problem that must be solved — not a reason to remain in Detection mode permanently.', tag: 'required' },
+      { label: 'Rollback procedure documented before Prevention mode activation', detail: 'Before switching to Prevention mode, document and test the rollback procedure: switch the policy back to Detection mode via the portal or a pre-staged ARM/Bicep deployment. Confirm that all team members with on-call access can execute the rollback within 5 minutes — a blocking WAF mis-configuration takes down the application immediately and must be recoverable faster than a standard change process allows.', tag: 'required' },
+      { label: 'Per-listener policies considered for differential Prevention mode rollout', detail: 'If the gateway serves multiple sites or applications with different traffic patterns, use per-listener policies to enable Prevention mode on low-risk listeners first (static site, monitoring endpoint) while keeping the complex application listener in Detection mode until it is fully tuned. This allows incremental Prevention mode adoption without a single all-or-nothing transition.', tag: 'recommended' }
+    ]
+  },
+  {
+    id: 'exclusions', cls: 's-backend', icon: 'EXC', title: 'Exclusions & rule tuning',
+    items: [
+      { label: 'Exclusions scoped to the minimum necessary match condition', detail: 'WAF exclusions are scoped to: (1) a request attribute (RequestHeaderNames, RequestCookieNames, RequestArgNames, RequestBodyPostArgNames, RequestBodyJsonArgNames); (2) an operator (Equals, StartsWith, EndsWith, Contains, EqualsAny for wildcard); and (3) a selector (the specific header/cookie/argument name). Always scope exclusions to the most specific combination possible — a wildcard exclusion on RequestArgNames with EqualsAny effectively disables the rule for all query parameters, removing most of its detection value. Prefer per-rule exclusions over per-rule-group exclusions.', tag: 'required' },
+      { label: 'Large request body scenarios identified (file upload, JSON payloads)', detail: 'By default, WAF inspects up to 128 KB of the request body. Requests with bodies larger than the inspection limit are either blocked or passed uninspected depending on the requestBodyCheck setting and the maxRequestBodySizeInKb/fileUploadLimitInMb policy settings. Identify application endpoints that accept large file uploads or large JSON bodies and configure the appropriate body size limits. File upload endpoints are a common false positive source for CRS injection rules — a targeted exclusion on the file parameter argument is typically required.', tag: 'recommended' },
+      { label: 'Authentication and session cookie names excluded from specific injection rules', detail: 'Session tokens and JWT/OAuth tokens in cookies or Authorization headers often contain characters that trigger SQL injection or XSS rules (base64 padding characters, encoded JSON). Add targeted exclusions for the specific cookie names or header names (e.g. RequestCookieNames Equals ".AspNet.ApplicationCookie" for CRS rule 942440). Do not exclude the entire rule — exclude by attribute and selector to maintain detection for other request parts.', tag: 'recommended' },
+      { label: 'Health probe and monitoring tool User-Agents accounted for', detail: 'Azure Load Balancer health probes, Application Gateway health probes, and external monitoring tools (Pingdom, Datadog synthetics, New Relic) send requests with distinctive User-Agent strings that may trigger scanner detection rules (REQUEST-913). Add exclusions or custom allow rules for known monitoring tool source IPs or User-Agent strings before Prevention mode activation — missing these causes health checks to fail immediately upon Prevention mode switch, triggering backend pool unhealthy alerts.', tag: 'recommended' },
+      { label: 'Exclusion review scheduled after every managed rule set upgrade', detail: 'When upgrading the managed rule set version, existing exclusions must be re-validated — new rule versions may reclassify the rule IDs referenced in exclusions, or the exclusion may no longer be necessary if the rule logic changed. Build exclusion review into the rule set upgrade runbook as a mandatory step, not an afterthought. Stale exclusions reduce WAF coverage over time.', tag: 'recommended' },
+      { label: 'No wildcard exclusions in production without documented justification', detail: 'Wildcard exclusions (EqualsAny operator on RequestArgNames, RequestHeaderNames, etc.) disable the scoped rule\'s detection for all values of that attribute type across all requests. This is occasionally necessary for complex applications with highly dynamic parameter names, but must be documented with explicit justification and reviewed in the next security review cycle. Undocumented wildcards are frequently left in place from tuning sessions and represent an invisible ongoing reduction in WAF coverage.', tag: 'required' }
+    ]
+  },
+  {
+    id: 'custom', cls: 's-routing', icon: 'CUS', title: 'Custom rules',
+    items: [
+      { label: 'IP allowlist / denylist rules defined for known sources', detail: 'Custom rules can match on RemoteAddr (client IP or CIDR). Common patterns: (1) IP denylist — block known-bad IP ranges identified from threat intelligence or previous attack traffic; (2) IP allowlist for admin paths — allow only specific management IP ranges to reach sensitive URL paths (admin portal, deployment endpoints), with a default-deny rule for all other sources to those paths. IP-based custom rules are evaluated before managed rules and execute at microsecond scale with no per-request overhead.', tag: 'recommended' },
+      { label: 'Geo-blocking rules configured for irrelevant regions', detail: 'Custom rules support geo-match conditions using the GeoMatch operator against the RemoteAddr. If the application has no legitimate users or partners in specific geographic regions, block those regions with a custom deny rule. This reduces attack surface, lowers managed rule evaluation volume, and surfaces anomalies more clearly in firewall logs. Confirm with business owners that no legitimate traffic (CDN egress IPs, partner systems, VPN exit nodes) originates from blocked regions before enabling.', tag: 'recommended' },
+      { label: 'Rate limiting rules configured on authentication and sensitive endpoints', detail: 'Zero Trust — assume breach: rate limiting custom rules restrict the number of requests from a single client IP (or IP group) within a time window. Apply rate limits to: authentication endpoints (login, MFA, password reset), account enumeration endpoints (user lookup, search), payment and checkout flows, and any API endpoint with per-call cost. The rule type is RateLimitRule with a rateLimit threshold and groupByVariables set to ClientAddr. Start conservatively (e.g. 100 requests per minute per IP for login) and adjust based on legitimate usage patterns from ApplicationGatewayFirewallLog.', tag: 'recommended' },
+      { label: 'Custom rule priority order reviewed — lower number = higher priority', detail: 'Custom rules are evaluated in ascending priority order (lowest number first). A rule with priority 1 is evaluated before priority 100. Rules stop evaluating at the first match that results in Allow or Block — subsequent rules are not evaluated for that request. Plan your priority order deliberately: IP allowlist rules should have lower priority numbers than IP denylist rules if they share overlapping conditions; geo-block rules should precede managed rule evaluation.', tag: 'required', arm: true },
+      { label: 'String match rules for known-bad User-Agents or request patterns', detail: 'Custom rules can match on RequestHeaders (including User-Agent), RequestUri, QueryString, PostArgs, and RequestBody using Contains, BeginsWith, EndsWith, and Regex operators. Common patterns: block requests with known vulnerability scanner User-Agents (sqlmap, nikto, nmap, masscan); block requests to common WordPress admin paths if the application is not WordPress; block requests containing path traversal patterns (../../../) not caught by managed rules at your current tuning level.', tag: 'optional' },
+      { label: 'Custom rules exported and version-controlled as part of WAF Policy IaC', detail: 'Custom rules are part of the WAF Policy ARM resource definition. Ensure they are defined in the Bicep template (not added manually via the portal) so they survive redeployments and are subject to peer review. Portal-added custom rules that are not reflected in IaC are silently overwritten on the next deployment — this is a common cause of security regressions after routine IaC apply operations.', tag: 'required' }
+    ]
+  },
+  {
+    id: 'bot', cls: 's-entra', icon: 'BOT', title: 'Bot protection & advanced rules',
+    items: [
+      { label: 'Microsoft Bot Protection ruleset evaluated', detail: 'The Bot Protection managed ruleset is an add-on to the primary managed rule set (DRS or CRS). It categorises traffic into: Good bots (search engine crawlers — allowed), Bad bots (known malicious scanners, credential stuffers — blocked), and Unknown bots (unclassified automated agents — logged). Enable bot protection unless you have a specific reason to permit unclassified bot traffic. It is a single checkbox in the WAF Policy settings (managedRules.managedRuleSets entry for Microsoft_BotManagerRuleSet 1.0) and adds no meaningful latency overhead.', tag: 'recommended', arm: true },
+      { label: 'Bot protection mode set to Prevention for bad bots', detail: 'Bot protection has its own mode setting independent of the primary managed rule set mode. Bad bot traffic identified by the ruleset should be set to Block, not Log. Unknown bots can be set to Log during the initial baseline period and transitioned to Block once the false-positive rate is confirmed acceptable. Good bots (Microsoft verified crawlers, legitimate search engines) are always allowed regardless of mode.', tag: 'recommended' },
+      { label: 'Sensitive data masking configured in WAF logs', detail: 'ApplicationGatewayFirewallLog can contain sensitive request data — query string parameters, POST body arguments, and cookie values that match scoped WAF rules. WAF Policy supports log scrubbing (sensitiveDataMasking) to mask specific field types in logs before they are written to Log Analytics. Define masking rules for fields likely to contain PII, credentials, or payment card data. This is particularly important for compliance frameworks (PCI DSS, HIPAA, GDPR) that restrict logging of sensitive data.', tag: 'recommended' },
+      { label: 'File upload limits configured for endpoints that accept uploads', detail: 'WAF Policy controls maximum request body size (maxRequestBodySizeInKb, default 128 KB) and maximum file upload size (fileUploadLimitInMb, default 100 MB) independently. For applications with file upload endpoints, confirm the upload limit is set to the minimum necessary for legitimate uploads — not left at the default maximum. Oversized upload limits increase the window for large-payload attacks. For applications with no file upload functionality, set fileUploadLimitInMb to 1 and enable fileUploadEnforcement.', tag: 'recommended' },
+      { label: 'JavaScript challenge evaluated for high-risk endpoints (preview feature)', detail: 'Azure WAF supports browser-based JavaScript challenge as a custom rule action (JSChallenge) for endpoints where automated traffic is a concern. Rather than blocking on suspicion, the WAF presents a transparent JS challenge that legitimate browsers pass automatically. This significantly reduces false positives on bot mitigation compared to hard-block rules. Evaluate for login, registration, and checkout endpoints if bot traffic is a significant concern. Note: JSChallenge is a preview feature — confirm GA status before production adoption.', tag: 'optional' }
+    ]
+  },
+  {
+    id: 'monitor', cls: 's-monitor', icon: 'OBS', title: 'Monitoring & log analysis',
+    items: [
+      { label: 'ApplicationGatewayFirewallLog diagnostic setting enabled', detail: 'The WAF-specific log category is ApplicationGatewayFirewallLog — this is separate from ApplicationGatewayAccessLog (all requests) and ApplicationGatewayPerformanceLog (backend latency). ApplicationGatewayFirewallLog records every request the WAF evaluated, the rules that fired, the action taken (Detected or Blocked), the ruleId, ruleGroup, message, and the request details. This log is the primary source for tuning, investigation, and compliance audit. Confirm it is enabled in the Application Gateway diagnostic settings — it is not enabled by default.', tag: 'required' },
+      { label: 'KQL baseline queries saved for Detection-mode tuning', detail: 'Before Prevention mode, save the following KQL queries in Log Analytics: (1) top fired rules by count; (2) rules fired per requestUri sorted by volume; (3) rules fired for known-good source IPs (your monitoring tools, partner systems); (4) rules fired vs legitimate user sessions (correlate with AccessLog). These queries are the primary tuning instrument — save them as named queries or workbook sections so they can be re-run during any rule set upgrade or exclusion review.', tag: 'required' },
+      { label: 'Alert: WAF block rate spike above baseline', detail: 'Define a Log Analytics alert on ApplicationGatewayFirewallLog for a spike in action = "Blocked" events above the baseline block rate. A sudden spike can indicate: (a) an active attack being successfully blocked — confirm and monitor; (b) a new managed rule set update incorrectly blocking legitimate traffic — trigger the rollback procedure; (c) a newly deployed application feature sending requests that match existing rules — trigger a Detection-mode review. Set the threshold relative to your baseline block volume, not an absolute number.', tag: 'recommended' },
+      { label: 'Alert: specific high-severity rules firing repeatedly', detail: 'Create targeted alerts for high-severity managed rules that indicate likely active attacks rather than false positives: SQL injection rules (942xxx for CRS, equivalent DRS rules), remote command execution (930xxx, 932xxx), and server-side request forgery (SSRF) patterns. A sustained stream of these rule fires from a single source IP warrants immediate investigation and possible IP denylist custom rule addition.', tag: 'recommended' },
+      { label: 'WAF log retention configured for compliance period', detail: 'ApplicationGatewayFirewallLog contains a complete record of access attempts including blocked attacks. Compliance frameworks (PCI DSS 10.x, SOC 2, ISO 27001) typically require network security event logs to be retained for 12 months with 3 months immediately available. Default Log Analytics retention is 30 days. Extend workspace retention or configure diagnostic settings to archive to a Storage Account for long-term retention.', tag: 'recommended' },
+      { label: 'Sensitive data masking in logs verified end-to-end', detail: 'After deploying log scrubbing rules, verify they work as expected: generate a test request containing data matching the masked field selectors, retrieve the corresponding ApplicationGatewayFirewallLog entry from Log Analytics, and confirm the masked fields show as ***** rather than the original values. Do not assume masking is working without a verification test — misconfigured scrubbing rules silently fail to mask the target data.', tag: 'recommended' }
+    ]
+  },
+  {
+    id: 'iac', cls: 's-iac', icon: 'IaC', title: 'IaC & deployment',
+    items: [
+      { label: 'WAF Policy defined as a standalone Bicep resource — not inline on the gateway', detail: 'The Bicep resource type is Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies. Define it as its own resource block with an explicit symbolic name. Associate it with the Application Gateway via the gateway\'s webApplicationFirewallConfiguration property (for global association) or via the listener\'s firewallPolicy.id / pathBasedRule firewallPolicy.id (for per-listener/per-path association). The policy resource must be deployed before or in the same deployment as the gateway association — use dependsOn if deploying in the same template.', tag: 'required', arm: true },
+      { label: 'CAF naming applied before first deployment — name is immutable', detail: 'WAF Policy resource names cannot be changed after deployment — a rename requires full delete and recreate, which also severs the association with the Application Gateway (causing unprotected traffic to flow until reassociated). Confirm CAF naming: waf-{workload}-{env}-{locationAbbr}-{namingIndex} (example: waf-ecomm-prod-eus-01) before first deployment. Apply the same naming diligence as Application Gateway and Public IP resources.', tag: 'required', arm: true },
+      { label: 'All custom rules and exclusions defined in Bicep — no portal-only changes', detail: 'Every custom rule, every managed rule group override, every rule-level disable, and every exclusion must be reflected in the Bicep template. Portal changes that are not committed back to IaC are silently overwritten on the next deployment. Establish a strict policy: no WAF configuration changes via the portal in production unless immediately followed by a Bicep sync and a PR merge. Consider enabling Azure Policy to detect WAF policy drift from the desired state.', tag: 'required' },
+      { label: 'WAF Policy changes deployed through a staged pipeline: Detection → validate → Prevention', detail: 'All WAF Policy changes in production must follow a staged deployment process: (1) deploy with mode = Detection; (2) run ApplicationGatewayFirewallLog analysis for the validation window; (3) if no new false positives, redeploy with mode = Prevention. This applies to managed rule set upgrades, new custom rules, and exclusion changes. Direct Prevention-mode deployments without a Detection validation window are prohibited in production — they are the primary cause of WAF-induced outages.', tag: 'required' },
+      { label: 'CanNotDelete lock applied to WAF Policy resource group', detail: 'Apply a CanNotDelete management lock to the resource group containing the WAF Policy. Accidental deletion of the WAF Policy disassociates it from the Application Gateway — the gateway continues to function but with no WAF protection, and no alerts are generated (the gateway health probe does not monitor WAF association status). This is an invisible security regression. A CanNotDelete lock prevents runbook accidents and automated cleanup scripts from causing this scenario.', tag: 'recommended' },
+      { label: 'IaC stored in source control with peer review required on all WAF changes', detail: 'WAF Policy Bicep should be in the same repository as the Application Gateway template with branch protection requiring peer review on all changes. A WAF rule change has two failure modes: it fails to block an attack (too permissive) or it blocks legitimate traffic (too restrictive). Both require independent review to catch. Never merge WAF rule changes without an explicit security review sign-off — not just a standard code review.', tag: 'required' },
+      { label: 'Resource tags applied at deployment time', detail: 'Apply at minimum Workload, Environment, CostCenter, and createdBy tags to the WAF Policy resource at deployment time. WAF Policy is an independently billed resource — correct tagging is required for cost allocation to the workload team. WAF Policy costs: approximately $20/month per policy plus $0.87 per million rule evaluations beyond the included 10 million. For high-traffic applications, rule evaluation costs can be significant — tag correctly so cost anomalies surface in cost management reports.', tag: 'required' }
+    ]
+  }
+];
+
+const state = {};
+
+function updateProgress() {
+  let total = 0, checked = 0;
+  data.forEach(sec => sec.items.forEach(item => {
+    total++;
+    if (state[sec.id + ':' + item.label]) checked++;
+  }));
+  const pct = total ? Math.round(checked / total * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressPct').textContent = pct + '%';
+  document.getElementById('progressCount').textContent = checked + ' / ' + total;
+  document.getElementById('completeBanner').style.display = (checked === total && total > 0) ? 'block' : 'none';
+  data.forEach(sec => {
+    const el = document.querySelector('[data-id="' + sec.id + '"]');
+    if (!el) return;
+    let sc = 0;
+    sec.items.forEach(item => { if (state[sec.id + ':' + item.label]) sc++; });
+    el.querySelector('.section-count').textContent = sc + ' / ' + sec.items.length;
+  });
+}
+
+function toggleItem(secId, labelEncoded) {
+  const label = decodeURIComponent(labelEncoded);
+  const key = secId + ':' + label;
+  state[key] = !state[key];
+  const item = document.querySelector('[data-key="' + secId + '__' + labelEncoded + '"]');
+  if (item) item.classList.toggle('checked', state[key]);
+  updateProgress();
+}
+
+function tagHTML(tag) {
+  const map = { required: 'tag-required', optional: 'tag-optional', recommended: 'tag-recommended', bicep: 'tag-bicep' };
+  return '<span class="item-tag ' + (map[tag] || 'tag-optional') + '">' + tag + '</span>';
+}
+
+function escapeHTML(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function render() {
+  const container = document.getElementById('sections');
+  container.innerHTML = '';
+  data.forEach((sec, si) => {
+    const div = document.createElement('div');
+    div.className = 'section ' + sec.cls + (si === 0 ? ' open' : '');
+    div.dataset.id = sec.id;
+    const itemsHTML = sec.items.map((item, ii) => {
+      const enc = encodeURIComponent(item.label);
+      const keyAttr = sec.id + '__' + enc;
+      return '<div class="item" data-key="' + keyAttr + '" onclick="toggleItem(\'' + sec.id + '\',\'' + enc + '\')">' +
+        '<div class="checkbox"><span class="checkmark">&#10003;</span></div>' +
+        '<div class="item-content">' +
+          '<div class="item-label">' + (item.arm ? '<span class="arm-badge">&#9654; ARM</span>' : '') + escapeHTML(item.label) + '</div>' +
+          '<div class="item-detail">' + escapeHTML(item.detail) + '</div>' +
+          tagHTML(item.tag) +
+        '</div></div>' +
+        (ii < sec.items.length - 1 ? '<div class="divider"></div>' : '');
+    }).join('');
+    div.innerHTML =
+      '<div class="section-header" onclick="this.closest(\'.section\').classList.toggle(\'open\')">' +
+        '<div class="section-icon">' + sec.icon + '</div>' +
+        '<span class="section-title">' + sec.title + '</span>' +
+        '<span class="section-count">0 / ' + sec.items.length + '</span>' +
+        '<span class="section-chevron">&#9654;</span>' +
+      '</div>' +
+      '<div class="section-body">' + itemsHTML + '</div>';
+    container.appendChild(div);
+  });
+  updateProgress();
+}
+
+function expandAll()  { document.querySelectorAll('.section').forEach(s => s.classList.add('open')); }
+function collapseAll(){ document.querySelectorAll('.section').forEach(s => s.classList.remove('open')); }
+function resetAll() {
+  if (confirm('Reset all checkboxes?')) {
+    Object.keys(state).forEach(k => delete state[k]);
+    document.querySelectorAll('.item').forEach(el => el.classList.remove('checked'));
+    updateProgress();
+  }
+}
+
+render();
+</script>

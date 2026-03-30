@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18">
+  <defs>
+    <linearGradient id="bst-top" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#00b7c3"/>
+      <stop offset="100%" stop-color="#0078d4"/>
+    </linearGradient>
+    <linearGradient id="bst-base" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#005a9e"/>
+      <stop offset="100%" stop-color="#003a6e"/>
+    </linearGradient>
+  </defs>
+  <!-- Left battlement -->
+  <rect x="1"   y="1.5" width="2.2" height="2.2" rx="0.3" fill="url(#bst-top)"/>
+  <!-- Centre-left battlement -->
+  <rect x="4.2" y="1.5" width="2.2" height="2.2" rx="0.3" fill="url(#bst-top)"/>
+  <!-- Centre-right battlement -->
+  <rect x="11.6" y="1.5" width="2.2" height="2.2" rx="0.3" fill="url(#bst-top)"/>
+  <!-- Right battlement -->
+  <rect x="14.8" y="1.5" width="2.2" height="2.2" rx="0.3" fill="url(#bst-top)"/>
+  <!-- Main wall -->
+  <rect x="1" y="3.7" width="16" height="8.8" rx="0.4" fill="url(#bst-top)"/>
+  <!-- Left window -->
+  <rect x="2.5" y="5.2" width="2.4" height="3.2" rx="1.2 1.2 0 0" fill="#00243a"/>
+  <!-- Right window -->
+  <rect x="13.1" y="5.2" width="2.4" height="3.2" rx="1.2 1.2 0 0" fill="#00243a"/>
+  <!-- Gate arch -->
+  <path d="M7 12.5 L7 9.2 Q9 7.0 11 9.2 L11 12.5 Z" fill="#00243a"/>
+  <!-- Lock body -->
+  <rect x="8.2" y="10.4" width="1.6" height="1.6" rx="0.25" fill="#50e6ff"/>
+  <!-- Lock shackle -->
+  <path d="M8.5 10.4 Q8.5 9.2 9 9.2 Q9.5 9.2 9.5 10.4" fill="none" stroke="#50e6ff" stroke-width="0.55"/>
+  <!-- Foundation -->
+  <rect x="0.5" y="12.5" width="17" height="4" rx="0.5" fill="url(#bst-base)"/>
+</svg>
