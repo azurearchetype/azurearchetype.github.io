@@ -1,3 +1,22 @@
+---
+layout: post
+title: "Finding Your Flow State"
+subtitle: "in the Age of Vibe Coding and Agentic AI"
+date: 2026-03-29
+author: Matthew
+
+series:
+series_part:
+series_title:
+
+tags:
+  - azure
+  - avd
+  - iac
+
+excerpt: "What happens to flow state when the AI isn't just co-authoring the code, but running the whole deployment pipeline while you architect the next one?"
+---
+
 <svg width="100%" viewBox="0 0 680 200" xmlns="http://www.w3.org/2000/svg">
   <defs><clipPath id="card"><rect width="680" height="200" rx="12"/></clipPath></defs>
   <rect width="680" height="200" fill="#0A1F35" rx="12"/>
@@ -49,11 +68,10 @@
   </g>
 </svg>
 
-# Finding Your Flow State in the Age of Vibe Coding and Agentic AI
 
 *Infrastructure as Code · Vibe Coding · Agentic AI · Developer Experience*
 
-**Matthew Coalson** · MCT · Azure Infrastructure · IaC · AI Foundry · 7 min read
+**Matthew Collins** · MCT · Azure Infrastructure · IaC · AI Foundry · 7 min read
 
 ---
 
