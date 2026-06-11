@@ -23,11 +23,11 @@ tags: [handoff, session-continuity, azurearchetype, website, blog]
 
 ## Current State
 
-**As of:** 2026-05-29 (Session 1 — project bootstrap)
+**As of:** 2026-06-10 (Session 2 — HVE Core IaC post)
 **Status:** Active. Jekyll site on GitHub Pages at azurearchetype.com.
-12 existing posts. Custom domain via GoDaddy DNS.
-Microsoft Clarity snippet added to head-custom.html (pending project ID).
-First content pipeline post published today: AVM alignment signal.
+13 posts. Custom domain via GoDaddy DNS. Clarity ID active.
+New standalone post live: HVE Core and Azure IaC — The Missing Layer.
+LinkedIn post drafted, pending publish tomorrow.
 
 **Infrastructure:**
 - GitHub Pages — master branch publishes automatically
@@ -45,6 +45,41 @@ First content pipeline post published today: AVM alignment signal.
 | IaC Deployment of AVD Observations | 3 | Complete |
 | Finding Your Flow State | 1 (standalone) | Complete |
 | AVM as a CAF, WAF, and Zero Trust Alignment Signal | 1 (standalone) | Published 2026-05-29 |
+| The Missing Layer in Microsoft's HVE Framework | 1 (standalone) | Published 2026-06-10 |
+
+---
+
+## Session Summary — 2026-06-10 (Session 2)
+
+**Session type:** New blog post — HVE Core and Azure IaC
+**Source:** Claude Copilot CLI session, azurearchetype.github.io
+
+### What Was Done
+
+- Researched HVE Core from source (github.com/microsoft/hve-core) — README, docs, RPI methodology, context-engineering.md
+- Developed post angle: AVM Bicep as the infrastructure-layer equivalent of HVE RPI phase isolation
+- Drafted blog post in contentFrametype-publishing (hveAndIaC-draft.md), edited in VS Code
+- Created Claude Design images: header (1200x628) and scroll-stop comparison table (1200x800)
+- Created LinkedIn draft in contentFrametype-publishing (hveAndIaC-linkedin-draft.md)
+- Published Jekyll post: `_posts/2026-06-10-hveAndIaC-missingLayer.md`
+- Copied both PNGs to `assets/img/`
+- Post confirmed live at azurearchetype.com
+- LinkedIn post drafted but not yet published — pickup tomorrow
+
+### Files Changed This Session
+
+| File | Change |
+|---|---|
+| `_posts/2026-06-10-hveAndIaC-missingLayer.md` | Created — full post with ToC, images, 6 sections |
+| `assets/img/azureArchetype-header-1200x628.png` | Added — header graphic |
+| `assets/img/azureArchetype-scrollstop-1200x800.png` | Added — scroll-stop comparison table |
+| `HANDOFF.md` | v0.1 → v0.2 — this update |
+
+### Open Items Added This Session
+
+| ID | Title | Priority | Notes |
+|---|---|---|---|
+| POST-003 | Cross-post HVE IaC post to LinkedIn | High | Draft in contentFrametype-publishing; blog link in first comment; attach scroll-stop image; update source-blog-post URL in LinkedIn draft |
 
 ---
 
@@ -123,4 +158,5 @@ feat: project bootstrap — HANDOFF.md, Clarity snippet, filename fix
 
 | Version | Date | Change |
 |---|---|---|
+| 0.2 | 2026-06-10 | Session 2 — HVE IaC post published; LinkedIn draft ready |
 | 0.1 | 2026-05-29 | Initial creation — project bootstrapped from first Cowork session |
